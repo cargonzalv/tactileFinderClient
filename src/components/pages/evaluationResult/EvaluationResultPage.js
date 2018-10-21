@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import imageEx from '../../../images/dogExample.jpg';
+import imageEx from '../../../images/Negative00001.jpg';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Footer from '../../shared/Footer';
@@ -34,7 +34,8 @@ const styles = theme => ({
   },
   button: {
   	marginTop:'4px',
-  	padding: '.8em 1em'
+	padding: '.8em 1em',
+	cursor:"pointer"
   },
   rangeresult:{
   	width:'80%'
@@ -47,34 +48,75 @@ const styles = theme => ({
   leftcontainer:{
   	width:'100%',
   	'max-width':'100%'
+  },
+  inputFile:{
+	width: "100%",
+    height: "100%",
+    position: "absolute",
+    top: 0,
+	left: 0,
+	display:"none"
   }
 });
 
 class EvaluationResultPage extends Component {
-	state = {
-    accepted: true,
-    value: 0
-};
+	constructor(props){
+		super(props);
+		this.inputRef = React.createRef();
+		this.image = React.createRef();
+		this.state = {
+			accepted: true,
+			value: 0,
+			image : imageEx,
+			predicting: false,
+			loadingImg: false,
+			predictions: 0,
+		};
+		this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+		this.getImageScore = this.getImageScore.bind(this);
+		this.model = null;
+	}
+	
 	async componentDidMount(){
-		const model = new TFModel();
+		this.model = new TFModel();
 		console.time('Loading of model');
-		await model.load();
+		await this.model.load();
   		console.timeEnd('Loading of model');
-		let inputImage = document.getElementById("inputImage").cloneNode();
+        this.getImageScore();
+	}
+	getImageScore(){
+		this.setState({predicting: true})
+		let inputImage = document.getElementById("inputImage").cloneNode()
+		console.log(inputImage)
 		inputImage.width = 224;
 		inputImage.height = 224;
+
   		const pixels = tf.fromPixels(inputImage);
-
-  		console.time('First prediction');
-  		let result = model.predict(pixels);
-  		const topK = model.getTopKClasses(result, 2);
-  		console.timeEnd('First prediction');
-
-  		topK.forEach(x => {
-    		console.log(`${x}`);
-  		});
+		console.time('First prediction');
+		console.log(this.model)
+  		let result = this.model.predict(pixels);
+		const prediction = this.model.getTopKClasses(result, 2);
+		console.timeEnd('First prediction');
+		let predValue = prediction.filter((p)=> p.label == "Positivo").map((p)=>p.value)
+		this.setState({
+			value: Math.round(predValue[0]*100),
+			predicting: false,
+			predictions: this.state.predictions + 1
+		})
+	
 	}
-
+	fileSelectedHandler(event){
+		this.setState({loadingImg: true})
+		if (event.target.files && event.target.files[0]) {
+			console.log(event.target.files[0])
+            let reader = new FileReader();
+            reader.onload = (e) => {
+				console.log("loadedddd")
+				this.setState({image: e.target.result, loadingImg: false})
+        	}
+			reader.readAsDataURL(event.target.files[0]);
+		}	
+	}
 	renderResultTitle() {
 		const { classes } = this.props;
 
@@ -115,11 +157,12 @@ class EvaluationResultPage extends Component {
 					<Grid item xs={12} sm={6}>
 						{this.renderResultTitle()}
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
-          				<img id="inputImage" src={imageEx} alt="dogImage" />
+          				<img id="inputImage" ref={this.image} src={this.state.image} alt="dogImage" onLoad={()=> {if(this.state.predictions) this.getImageScore()}} />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
-          				<Button variant="outlined" color="default" className={classes.button}>
-          					Upload another image
-          				</Button>
+          				<Button  variant="outlined" onClick={()=>this.inputRef.current.click()} color="default" className={classes.button}>
+          						Upload another image
+								<input ref={this.inputRef} id="file-upload" onChange={(event)=>this.fileSelectedHandler(event)} className={classes.inputFile} type="file"></input>
+          					</Button>
           				<Button variant="outlined" color="primary" className={classes.button}>
           					Download the t-graph
           				</Button>

@@ -12,3 +12,7 @@
   letter-spacing: -.07em;
   text-shadow: white 2px 2px 2px;
 }
+
+#file-upload:hover{
+  cursor: pointer
+}

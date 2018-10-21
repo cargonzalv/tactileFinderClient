@@ -28,6 +28,7 @@ const WEIGHTS_MANIFEST_URL = "https://raw.githubusercontent.com/cegonzalv/tactil
 
 const INPUT_NODE_NAME = 'input';
 const OUTPUT_NODE_NAME = 'final_result';
+
 const PREPROCESS_DIVISOR = tf.scalar(255 / 2);
 
 export class TFModel {
@@ -58,6 +59,7 @@ export class TFModel {
         PREPROCESS_DIVISOR);
     const reshapedInput =
         preprocessedInput.reshape([-1, ...preprocessedInput.shape]);
+    console.log(reshapedInput)
     return this.model.execute(
         {[INPUT_NODE_NAME]: reshapedInput}, OUTPUT_NODE_NAME);
   }
@@ -74,14 +76,9 @@ export class TFModel {
     for (let i = 0; i < values.length; i++) {
       predictionList.push({value: values[i], index: i});
     }
-    predictionList = predictionList
-                         .sort((a, b) => {
-                           return b.value - a.value;
-                         })
-                         .slice(0, topK);
+    predictionList = predictionList.slice(0, topK);
 
     return predictionList.map(x => {
-      console.log(x)
       return {label: classes[x.index], value: x.value};
     });
   }
