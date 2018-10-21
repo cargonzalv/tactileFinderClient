@@ -21,7 +21,7 @@ import * as tf from '@tensorflow/tfjs';
 const classes = {
   0: "Positivo",
   1: "Negativo"
-}https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/mobilenet_0.5_224/saved_model.pb
+}
 
 const MODEL_URL = "https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/mobilenet_0.5_224/saved_model.pb"
 const WEIGHTS_MANIFEST_URL = "https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/mobilenet_0.5_224/weights_manifest.json"
