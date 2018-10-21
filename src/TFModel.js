@@ -23,11 +23,11 @@ const classes = {
   1: "Negativo"
 }
 
-const MODEL_URL = "https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/mobilenet_0.5_224/saved_model.pb"
+const MODEL_URL = "https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/mobilenet_0.5_224/tensorflowjs_model.pb"
 const WEIGHTS_MANIFEST_URL = "https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/mobilenet_0.5_224/weights_manifest.json"
 
 const INPUT_NODE_NAME = 'input';
-const OUTPUT_NODE_NAME = 'MobilenetV1/Predictions/Reshape_1';
+const OUTPUT_NODE_NAME = 'final_result';
 const PREPROCESS_DIVISOR = tf.scalar(255 / 2);
 
 export class TFModel {
