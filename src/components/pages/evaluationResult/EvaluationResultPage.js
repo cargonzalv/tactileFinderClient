@@ -8,6 +8,11 @@ import Button from '@material-ui/core/Button';
 import Footer from '../../shared/Footer';
 import TextField from '@material-ui/core/TextField';
 import './EvaluationResultPage.css';
+import * as tf from '@tensorflow/tfjs';
+import MODEL_URL from "../../../tfmodel/mobilenet_0.5_224/tensorflowjs_model.pb"
+import WEIGHTS_URL from "../../../tfmodel/mobilenet_0.5_224/weights_manifest.json"
+const jsonUpload = document.getElementById('json-upload');
+const weightsUpload = document.getElementById('weights-upload');
 
 const styles = theme => ({
   contentcontainer: {
@@ -53,6 +58,11 @@ class EvaluationResultPage extends Component {
     accepted: true,
     value: 0
 };
+	async componentDidMount(){
+		const model = await tf.loadFrozenModel(MODEL_URL, WEIGHTS_URL);
+		const inputImage = document.getElementById('inputImage');
+		model.execute({input: tf.fromPixels(inputImage)});
+	}
 
 	renderResultTitle() {
 		const { classes } = this.props;
@@ -91,11 +101,12 @@ class EvaluationResultPage extends Component {
 			<div>
 				<Grid container>
 
-
+					<input name="json-upload" type="file" />
+					<input name="weights-upload" type="file" />
 					<Grid item xs={12} sm={6}>
 						{this.renderResultTitle()}
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
-          				<img id="exampleImage" src={imageEx} alt="dogImage" />
+          				<img id="inputImage" src={imageEx} alt="dogImage" />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
           				<Button variant="outlined" color="default" className={classes.button}>
           					Upload another image
