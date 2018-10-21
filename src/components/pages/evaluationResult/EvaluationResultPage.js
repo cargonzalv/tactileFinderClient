@@ -9,10 +9,7 @@ import Footer from '../../shared/Footer';
 import TextField from '@material-ui/core/TextField';
 import './EvaluationResultPage.css';
 import * as tf from '@tensorflow/tfjs';
-import MODEL_URL from "../../../tfmodel/mobilenet_0.5_224/tensorflowjs_model.pb"
-import WEIGHTS_URL from "../../../tfmodel/mobilenet_0.5_224/weights_manifest.json"
-const jsonUpload = document.getElementById('json-upload');
-const weightsUpload = document.getElementById('weights-upload');
+import {TFModel} from "../../../TFModel.js";
 
 const styles = theme => ({
   contentcontainer: {
@@ -59,9 +56,23 @@ class EvaluationResultPage extends Component {
     value: 0
 };
 	async componentDidMount(){
-		const model = await tf.loadFrozenModel(MODEL_URL, WEIGHTS_URL);
-		const inputImage = document.getElementById('inputImage');
-		model.execute({input: tf.fromPixels(inputImage)});
+		const model = new TFModel();
+		console.time('Loading of model');
+		await model.load();
+  		console.timeEnd('Loading of model');
+		let inputImage = document.getElementById("inputImage").cloneNode();
+		inputImage.width = 224;
+		inputImage.height = 224;
+  		const pixels = tf.fromPixels(inputImage);
+
+  		console.time('First prediction');
+  		let result = model.predict(pixels);
+  		const topK = model.getTopKClasses(result, 2);
+  		console.timeEnd('First prediction');
+
+  		topK.forEach(x => {
+    		console.log(`${x}`);
+  		});
 	}
 
 	renderResultTitle() {
@@ -101,8 +112,6 @@ class EvaluationResultPage extends Component {
 			<div>
 				<Grid container>
 
-					<input name="json-upload" type="file" />
-					<input name="weights-upload" type="file" />
 					<Grid item xs={12} sm={6}>
 						{this.renderResultTitle()}
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
