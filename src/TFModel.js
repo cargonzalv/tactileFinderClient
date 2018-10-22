@@ -18,6 +18,21 @@
 import * as tf from '@tensorflow/tfjs';
 
 
+function getText(){
+  // read text from URL location
+  var request = new XMLHttpRequest();
+  request.open('GET', 'http://www.puzzlers.org/pub/wordlists/pocket.txt', true);
+  request.send(null);
+  request.onreadystatechange = function () {
+      if (request.readyState === 4 && request.status === 200) {
+          var type = request.getResponseHeader('Content-Type');
+          if (type.indexOf("text") !== 1) {
+              return request.responseText;
+          }
+      }
+  }
+}
+let txt = getText("")
 const classes = {
   0: "Positivo",
   1: "Negativo"
@@ -25,6 +40,7 @@ const classes = {
 const IMAGE_SIZE = 224;
 
 let trainedModel = "mobilenet_1.0_224";
+let txt = getText(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/retrained_labels.txt`)
 const MODEL_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
 const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
 
@@ -81,7 +97,7 @@ export class TFModel {
 
         const batched = resized.reshape([1, IMAGE_SIZE, IMAGE_SIZE, 3]);
           // console.log(reshapedInput)
-          return this.model.predict(batched)
+          return this.model.predict(batched).print()
         })
         
       }

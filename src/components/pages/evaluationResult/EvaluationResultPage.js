@@ -131,10 +131,11 @@ class EvaluationResultPage extends Component {
 		console.log(inputImage)
 
 		console.time('First prediction');
-  		let result = this.model.predict(inputImage);
+		  let result = this.model.predict(inputImage);
+		  console.log(result)
 		const prediction = await this.model.getTopKClasses(result);
 		console.timeEnd('First prediction');
-		let predValue = prediction[0].value*100
+		let predValue = prediction[1].value*100
 		this.setState({
 			value: Math.round(predValue * 100)/100,
 			predicting: false,
