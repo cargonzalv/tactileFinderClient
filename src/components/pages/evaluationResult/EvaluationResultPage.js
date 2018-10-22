@@ -2,15 +2,24 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import imageEx from '../../../images/catExample.jpg';
+import imageEx from '../../../images/elephantExample.png';
+import loaderGif from "../../../images/loader.gif";
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Footer from '../../shared/Footer';
 import TextField from '@material-ui/core/TextField';
 import './EvaluationResultPage.css';
-import * as tf from '@tensorflow/tfjs';
 import {TFModel} from "../../../TFModel.js";
+import ReactLoading from "react-loading";
+import Loading from 'react-loading';
 
+let colors = {
+	"green" : "#008744",
+	"blue"  : "#0057e7",
+	"red"   : "#d62d20",
+	"yellow": "#ffa700",
+	"white" : "#eee",
+}
 const styles = theme => ({
   contentcontainer: {
     flexGrow: 1,
@@ -49,6 +58,26 @@ const styles = theme => ({
   	width:'100%',
   	'max-width':'100%'
   },
+  loaderContainer:{
+	position: "fixed", /* Sit on top of the page content */
+    display: "block", /* Hidden by default */
+    width: "100%", /* Full width (cover the whole page) */
+    height: "100%", /* Full height (cover the whole page) */
+    top: 0, 
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)", /* Black background with opacity */
+    zIndex: 1000,/* Specify a stack order in case you're using a different order for other  */
+  },
+  loader:{
+	position: "relative", /* Sit on top of the page content */
+    width: "200px", /* Full width (cover the whole page) */
+    height: "200px", 
+    top: "40%", 
+    left: "50%",
+	transform: "translate(-50%,-50%)",
+  },
   inputFile:{
 	width: "100%",
     height: "100%",
@@ -71,40 +100,49 @@ class EvaluationResultPage extends Component {
 			predicting: false,
 			loadingImg: false,
 			predictions: 0,
+			showLoader: false,
+			changeTimeout : 0
 		};
 		this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
 		this.getImageScore = this.getImageScore.bind(this);
 		this.model = null;
 	}
 	
+	componentDidUpdate(prevProps, prevState){
+		let startingPredict = !prevState.predicting && this.state.predicting;
+		let startingLoad = !prevState.loadingImg && this.state.loadingImg;
+		if(startingPredict||startingLoad){
+			this.setState({showLoader: false})
+			setTimeout(()=>{
+				this.setState({showLoader:true})
+			},200)
+		}
+	}
 	async componentDidMount(){
 		this.model = new TFModel();
 		console.time('Loading of model');
 		await this.model.load();
   		console.timeEnd('Loading of model');
-        this.getImageScore();
+		this.getImageScore();
 	}
-	getImageScore(){
+	async getImageScore(){
 		this.setState({predicting: true})
 		let inputImage = document.getElementById("inputImage").cloneNode()
 		console.log(inputImage)
-		inputImage.width = 224;
-		inputImage.height = 224;
 
-  		const pixels = tf.fromPixels(inputImage);
 		console.time('First prediction');
-		console.log(this.model)
-  		let result = this.model.predict(pixels);
-		const prediction = this.model.getTopKClasses(result, 2);
+  		let result = this.model.predict(inputImage);
+		const prediction = await this.model.getTopKClasses(result);
 		console.timeEnd('First prediction');
-		let predValue = prediction.filter((p)=> p.label == "Positivo").map((p)=>p.value)
+		let predValue = prediction[0].value*100
 		this.setState({
-			value: Math.round(predValue[0]*100),
+			value: Math.round(predValue * 100)/100,
 			predicting: false,
 			predictions: this.state.predictions + 1
 		})
 	
 	}
+
 	fileSelectedHandler(event){
 		this.setState({loadingImg: true})
 		if (event.target.files && event.target.files[0]) {
@@ -112,10 +150,18 @@ class EvaluationResultPage extends Component {
             let reader = new FileReader();
             reader.onload = (e) => {
 				console.log("loadedddd")
-				this.setState({image: e.target.result, loadingImg: false})
+				this.setState({image: e.target.result, loadingImg:false})
         	}
 			reader.readAsDataURL(event.target.files[0]);
 		}	
+		else{
+			this.state({loadingImg:false})
+		}
+	}
+	handleImgLoad(){
+		if(this.state.predictions) {
+			this.getImageScore()
+		}
 	}
 	renderResultTitle() {
 		const { classes } = this.props;
@@ -149,19 +195,30 @@ class EvaluationResultPage extends Component {
 
 	render() {
 		const { classes } = this.props;
-
+// balls
+// bars
+// bubbles
+// cubes
+// cylon
+// spin
+// spinningBubbles
+// spokes
 		return (
 			<div>
+				{(this.state.predicting || this.state.loadingImg) && this.state.showLoader ?
+				<div className={classes.loaderContainer}>
+					<Loading className={classes.loader} type={"spin"} color={colors["blue"]}/>
+				</div>:""}
 				<Grid container>
 
 					<Grid item xs={12} sm={6}>
 						{this.renderResultTitle()}
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
-          				<img id="inputImage" ref={this.image} className={classes.img} src={this.state.image} alt="dogImage" onLoad={()=> {if(this.state.predictions) this.getImageScore()}} />
+          				<img id="inputImage" ref={this.image} className={classes.img} src={this.state.image} alt="dogImage" onLoad={()=> this.handleImgLoad()} />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
-          				<Button  variant="outlined" onClick={()=>this.inputRef.current.click()} color="default" className={classes.button}>
+          				<Button  variant="outlined" disabled={this.state.loadingImg || this.state.predicting} onClick={()=>{this.setState({loadingImg:true}); this.inputRef.current.click()}} color="default" className={classes.button}>
           						Upload another image
-								<input ref={this.inputRef} id="file-upload" onChange={(event)=>this.fileSelectedHandler(event)} className={classes.inputFile} type="file"></input>
+								<input ref={this.inputRef} id="file-upload" accept="image/*" onChange={(event)=>this.fileSelectedHandler(event)} className={classes.inputFile} type="file"></input>
           					</Button>
           				<Button variant="outlined" color="primary" className={classes.button}>
           					Download the t-graph
@@ -170,9 +227,7 @@ class EvaluationResultPage extends Component {
           				</Grid>
         			</Grid>
 
-
-
-        			<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} item xs={12} sm={6}>
+						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} item xs={12} sm={6}>
           				<div className="val">Score: {this.state.value}</div>
           				<input 
           				className={classes.rangeresult}
@@ -181,7 +236,7 @@ class EvaluationResultPage extends Component {
           				min="0" max="100" 
           				value={this.state.value} 
           				onChange={this.getInitialState.bind(this)}
-          				step="1"
+          				step="0.01"
           				/>
           				{this.renderImageResults()}
           				<Grid container={true} justify='center' alignContent='center' className={classes.leftcontainer}  xs={12} sm={12}>
@@ -203,13 +258,9 @@ class EvaluationResultPage extends Component {
         						/>
         					</Grid>
         				</Grid>
-        			</Grid>
-
-
-
+					</Grid>
         			<Footer />
-        		</Grid>
-        		
+				</Grid>      		
 			</div>
 		);
 	}
