@@ -10,10 +10,8 @@ import Footer from '../../shared/Footer';
 import TextField from '@material-ui/core/TextField';
 import './EvaluationResultPage.css';
 import {TFModel} from "../../../TFModel.js";
-import ReactLoading from "react-loading";
 import Loading from 'react-loading';
 import { TableBody } from '@material-ui/core';
-import { browserDownloadsRouter } from '@tensorflow/tfjs-core/dist/io/browser_files';
 
 let colors = {
 	"green" : "#008744",
@@ -157,7 +155,7 @@ class EvaluationResultPage extends Component {
 			reader.readAsDataURL(event.target.files[0]);
 		}	
 		else{
-			this.state({loadingImg:false})
+			this.setState({loadingImg:false})
 		}
 	}
 	handleImgLoad(){
