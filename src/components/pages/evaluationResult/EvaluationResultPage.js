@@ -12,6 +12,8 @@ import './EvaluationResultPage.css';
 import {TFModel} from "../../../TFModel.js";
 import ReactLoading from "react-loading";
 import Loading from 'react-loading';
+import { TableBody } from '@material-ui/core';
+import { browserDownloadsRouter } from '@tensorflow/tfjs-core/dist/io/browser_files';
 
 let colors = {
 	"green" : "#008744",
@@ -144,7 +146,7 @@ class EvaluationResultPage extends Component {
 	}
 
 	fileSelectedHandler(event){
-		this.setState({loadingImg: true})
+		console.log(event)
 		if (event.target.files && event.target.files[0]) {
 			console.log(event.target.files[0])
             let reader = new FileReader();
@@ -162,6 +164,16 @@ class EvaluationResultPage extends Component {
 		if(this.state.predictions) {
 			this.getImageScore()
 		}
+	}
+	handleUploadClick(){
+		this.setState({loadingImg:true});
+		document.body.onfocus = ()=>{
+			let input = document.getElementById("file-upload");
+			if(this.state.inputImage == input.value || input.value.length == 0){
+				this.setState({loadingImg:false})
+			}
+		};
+		this.inputRef.current.click()
 	}
 	renderResultTitle() {
 		const { classes } = this.props;
@@ -216,7 +228,7 @@ class EvaluationResultPage extends Component {
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
           				<img id="inputImage" ref={this.image} className={classes.img} src={this.state.image} alt="dogImage" onLoad={()=> this.handleImgLoad()} />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
-          				<Button  variant="outlined" disabled={this.state.loadingImg || this.state.predicting} onClick={()=>{this.setState({loadingImg:true}); this.inputRef.current.click()}} color="default" className={classes.button}>
+          				<Button  variant="outlined" disabled={this.state.loadingImg || this.state.predicting} onClick={()=>{this.handleUploadClick()}} color="default" className={classes.button}>
           						Upload another image
 								<input ref={this.inputRef} id="file-upload" accept="image/*" onChange={(event)=>this.fileSelectedHandler(event)} className={classes.inputFile} type="file"></input>
           					</Button>
