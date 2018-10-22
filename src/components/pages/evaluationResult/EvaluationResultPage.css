@@ -16,3 +16,7 @@
 #file-upload:hover{
   cursor: pointer
 }
+#inputImage{
+  max-width: 224px;
+  max-height: 224px;
+}

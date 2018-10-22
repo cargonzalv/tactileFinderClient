@@ -23,8 +23,9 @@ const classes = {
   1: "Negativo"
 }
 
-const MODEL_URL = "https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/mobilenet_0.5_224/tensorflowjs_model.pb"
-const WEIGHTS_MANIFEST_URL = "https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/mobilenet_0.5_224/weights_manifest.json"
+let trainedModel = "mobilenet_1.0_224";
+const MODEL_URL = `https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/${trainedModel}mobilenet_1.0_224/tensorflowjs_model.pb`
+const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
 
 const INPUT_NODE_NAME = 'input';
 const OUTPUT_NODE_NAME = 'final_result';
@@ -58,7 +59,7 @@ export class TFModel {
         tf.sub(input.asType('float32'), PREPROCESS_DIVISOR),
         PREPROCESS_DIVISOR);
     const reshapedInput =
-        preprocessedInput.reshape([-1, ...preprocessedInput.shape]);
+        preprocessedInput.reshape([1, ...preprocessedInput.shape]);
     console.log(reshapedInput)
     return this.model.execute(
         {[INPUT_NODE_NAME]: reshapedInput}, OUTPUT_NODE_NAME);

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import imageEx from '../../../images/Negative00001.jpg';
+import imageEx from '../../../images/catExample.jpg';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Footer from '../../shared/Footer';
@@ -157,7 +157,7 @@ class EvaluationResultPage extends Component {
 					<Grid item xs={12} sm={6}>
 						{this.renderResultTitle()}
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
-          				<img id="inputImage" ref={this.image} src={this.state.image} alt="dogImage" onLoad={()=> {if(this.state.predictions) this.getImageScore()}} />
+          				<img id="inputImage" ref={this.image} className={classes.img} src={this.state.image} alt="dogImage" onLoad={()=> {if(this.state.predictions) this.getImageScore()}} />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
           				<Button  variant="outlined" onClick={()=>this.inputRef.current.click()} color="default" className={classes.button}>
           						Upload another image
