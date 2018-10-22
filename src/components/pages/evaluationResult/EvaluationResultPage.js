@@ -135,7 +135,8 @@ class EvaluationResultPage extends Component {
 		  console.log(result)
 		const prediction = await this.model.getTopKClasses(result);
 		console.timeEnd('First prediction');
-		let predValue = prediction[1].value*100
+		console.log(prediction)
+		let predValue = prediction.find((p)=>p.label == "positive").value*100;
 		this.setState({
 			value: Math.round(predValue * 100)/100,
 			predicting: false,

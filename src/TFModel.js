@@ -17,35 +17,16 @@
 
 import * as tf from '@tensorflow/tfjs';
 
-
-function getText(url){
-  // read text from URL location
-  var request = new XMLHttpRequest();
-  request.open('GET', url, true);
-  request.send(null);
-  request.onreadystatechange = function () {
-      if (request.readyState === 4 && request.status === 200) {
-          var type = request.getResponseHeader('Content-Type');
-          if (type.indexOf("text") !== 1) {
-              return request.responseText;
-          }
-      }
-  }
-}
 const classes = {
   0: "Positivo",
   1: "Negativo"
 }
 const IMAGE_SIZE = 224;
 
-let trainedModel = "mobilenet_1.0_224";
-let txt = getText(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/retrained_labels.txt`)
-console.log(txt)
+const trainedModel = "mobilenet_1.0_224";
+
 const MODEL_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
 const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
-
-const INPUT_NODE_NAME = 'input';
-const OUTPUT_NODE_NAME = 'final_result';
 
 const PREPROCESS_DIVISOR = tf.scalar(255 / 2);
 
@@ -56,8 +37,15 @@ export class TFModel {
     this.model = await tf.loadFrozenModel(
       MODEL_URL,
       WEIGHTS_MANIFEST_URL);
-
-
+      let data = await fetch(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/retrained_labels.txt`,{
+        mode:"cors",
+      });
+      let text = await data.text();
+      let lines = text.split("\n");
+      this.classes = [];
+      lines.map((l)=>{
+        this.classes.push(l)
+      })
     // Warmup the model.
     const result = tf.tidy(
                        () => this.model.predict(tf.zeros(
@@ -96,19 +84,18 @@ export class TFModel {
         }
 
         const batched = resized.reshape([1, IMAGE_SIZE, IMAGE_SIZE, 3]);
-          // console.log(reshapedInput)
-          return this.model.predict(batched).print()
+          return this.model.predict(batched)
         })
         
       }
       
       async getTopKClasses(logits) {
-        const values = await logits.data();
+        const values = logits.dataSync();
         console.log(values)
         let predictionList = [];
         for (let i = 0; i < values.length; i++) {
           predictionList.push({
-            label: classes[i],
+            label: this.classes[i],
             value: values[i]
           });
         }
