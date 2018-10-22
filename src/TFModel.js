@@ -24,11 +24,11 @@ const classes = {
 }
 
 let trainedModel = "mobilenet_1.0_224";
-const MODEL_URL = `https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/${trainedModel}mobilenet_1.0_224/tensorflowjs_model.pb`
+const MODEL_URL = `https://github.com/cegonzalv/tactileFinderClient/raw/python-tf/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
 const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
 
 const INPUT_NODE_NAME = 'input';
-const OUTPUT_NODE_NAME = 'final_result';
+const OUTPUT_NODE_NAME = 'MobilenetV1/Predictions/Reshape_1';
 
 const PREPROCESS_DIVISOR = tf.scalar(255 / 2);
 
