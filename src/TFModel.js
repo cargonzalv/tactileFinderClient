@@ -18,10 +18,10 @@
 import * as tf from '@tensorflow/tfjs';
 
 
-function getText(){
+function getText(url){
   // read text from URL location
   var request = new XMLHttpRequest();
-  request.open('GET', 'http://www.puzzlers.org/pub/wordlists/pocket.txt', true);
+  request.open('GET', url, true);
   request.send(null);
   request.onreadystatechange = function () {
       if (request.readyState === 4 && request.status === 200) {
@@ -32,7 +32,6 @@ function getText(){
       }
   }
 }
-let txt = getText("")
 const classes = {
   0: "Positivo",
   1: "Negativo"
@@ -41,6 +40,7 @@ const IMAGE_SIZE = 224;
 
 let trainedModel = "mobilenet_1.0_224";
 let txt = getText(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/retrained_labels.txt`)
+console.log(txt)
 const MODEL_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
 const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
 
