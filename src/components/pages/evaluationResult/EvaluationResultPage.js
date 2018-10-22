@@ -226,7 +226,7 @@ class EvaluationResultPage extends Component {
 						<Grid container={true} justify='center' alignContent='center' className={classes.contentcontainer} >
           				<img id="inputImage" ref={this.image} className={classes.img} src={this.state.image} alt="dogImage" onLoad={()=> this.handleImgLoad()} />
           				<Grid container={true} justify='center' item xs={12} sm={12} className={classes.buttonCase}>
-          				<Button  variant="outlined" disabled={this.state.loadingImg || this.state.predicting} onClick={()=>{this.handleUploadClick()}} color="default" className={classes.button}>
+          				<Button  variant="outlined" disabled={this.state.loadingImg || this.state.predicting || !this.state.predictions} onClick={()=>{this.handleUploadClick()}} color="default" className={classes.button}>
           						Upload another image
 								<input ref={this.inputRef} id="file-upload" accept="image/*" onChange={(event)=>this.fileSelectedHandler(event)} className={classes.inputFile} type="file"></input>
           					</Button>
