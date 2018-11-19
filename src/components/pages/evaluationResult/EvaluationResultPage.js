@@ -96,7 +96,7 @@ class EvaluationResultPage extends Component {
 		this.state = {
 			accepted: true,
 			value: 0,
-			image : URL.createObjectURL(this.props.history.location.state.image),
+			image : this.props.history.location.state.image ? URL.createObjectURL(this.props.history.location.state.image) : imageEx,
 			predicting: true,
 			loadingImg: false,
 			predictions: 0,
