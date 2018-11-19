@@ -97,10 +97,10 @@ class EvaluationResultPage extends Component {
 			accepted: true,
 			value: 0,
 			image : imageEx,
-			predicting: false,
+			predicting: true,
 			loadingImg: false,
 			predictions: 0,
-			showLoader: false,
+			showLoader: true,
 			changeTimeout : 0
 		};
 		this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
@@ -140,7 +140,8 @@ class EvaluationResultPage extends Component {
 		this.setState({
 			value: Math.round(predValue * 100)/100,
 			predicting: false,
-			predictions: this.state.predictions + 1
+			showLoader: false,
+			predictions: this.state.predictions + 1,
 		})
 	
 	}
@@ -190,9 +191,9 @@ class EvaluationResultPage extends Component {
 
 		return this.state.value>=85?<Typography className={classes.title} component="h1" variant="display2" align="center" color="textPrimary" gutterBottom>
 						Great image! It works!
-						</Typography>:<Typography className={classes.title} component="h1" variant="display2" align="center" color="textPrimary" gutterBottom>
+						</Typography>:this.state.predictions?<Typography className={classes.title} component="h2" variant="display2" align="center" color="textPrimary" gutterBottom>
 						Try again with a better image :(
-						</Typography>;
+						</Typography> : "";
 	}
 
 	getInitialState(event) {

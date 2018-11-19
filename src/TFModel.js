@@ -16,6 +16,14 @@
 */
 
 import * as tf from '@tensorflow/tfjs';
+import firebase from("./firebase");
+const fs = require('fs');
+
+import firestore from firebase.firestore();
+const settings = {/* your settings... */ timestampsInSnapshots: true};
+
+firestore.settings(settings);
+
 
 const classes = {
   0: "Positivo",
@@ -25,8 +33,8 @@ const IMAGE_SIZE = 224;
 
 const trainedModel = "mobilenet_1.0_224";
 
-const MODEL_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
-const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/weights_manifest.json`
+const MODEL_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/master/src/tfmodel/${trainedModel}/tensorflowjs_model.pb`
+const WEIGHTS_MANIFEST_URL = `https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/master/src/tfmodel/${trainedModel}/weights_manifest.json`
 
 const PREPROCESS_DIVISOR = tf.scalar(255 / 2);
 
@@ -37,7 +45,7 @@ export class TFModel {
     this.model = await tf.loadFrozenModel(
       MODEL_URL,
       WEIGHTS_MANIFEST_URL);
-      let data = await fetch(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/python-tf/src/tfmodel/${trainedModel}/retrained_labels.txt`,{
+      let data = await fetch(`https://raw.githubusercontent.com/cegonzalv/tactileFinderClient/master/src/tfmodel/${trainedModel}/retrained_labels.txt`,{
         mode:"cors",
       });
       let text = await data.text();
