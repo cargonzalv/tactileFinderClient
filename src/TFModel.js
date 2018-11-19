@@ -16,10 +16,10 @@
 */
 
 import * as tf from '@tensorflow/tfjs';
-import firebase from("./firebase");
+import firebase from "./firebase";
 const fs = require('fs');
 
-import firestore from firebase.firestore();
+const firestore = firebase.firestore();
 const settings = {/* your settings... */ timestampsInSnapshots: true};
 
 firestore.settings(settings);

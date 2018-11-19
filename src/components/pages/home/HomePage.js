@@ -6,14 +6,24 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+
 import './HomePage.css';
 import Footer from '../../shared/HomeFooter';
+import { withRouter } from 'react-router-dom';
 import ImageGrid from './ImageGrid'
 
 const styles = theme => ({
   root: {
     flexGrow: 1,
     marginTop:"2.5em"
+  },
+  button: {
+    padding: theme.spacing.unit * 1,
+    textAlign: 'center',
+  },
+   buttonSearch: {
+    padding: theme.spacing.unit * 1.25,
+    textAlign: 'center',
   },
   paper: {
     padding: theme.spacing.unit * 2,
@@ -47,10 +57,12 @@ handleChange = (name) => event => {
     });
   };
 
-uploadImage = (name) => event => {
-    this.setState({
-      name: event.target.value,
-    });
+uploadImage = () => event => {
+  
+    this.props.history.push({
+  pathname: '/result',
+  state: { image: event.target.files[0] }
+})
   };
 
 searchImage = (name) => event => {
@@ -58,9 +70,9 @@ searchImage = (name) => event => {
       name: event.target.value,
     });
   };
-	render() {
-		const { classes } = this.props;
-		return (
+  render() {
+    const { classes } = this.props;
+    return (
     <div className={classes.root}>
       <Grid container >
       <Grid className="specialGrid" item xs={1}>
@@ -69,7 +81,7 @@ searchImage = (name) => event => {
           <Paper className={classes.paper}>
           <Grid item xs={12}>
             <Typography className={classes.title} color="inherit" noWrap>
-            T-Graph
+            Tactiled
             </Typography>
           </Grid>
           <Grid item xs={12}>
@@ -78,7 +90,40 @@ searchImage = (name) => event => {
             </Typography>
           </Grid>
 
-          <Grid item xs={12}>
+          
+          <Grid container spacing={24}>
+            <Grid item xs={6}>
+            <input
+              accept="image/*"
+              className={classes.input}
+              style={{ display: 'none' }}
+              id="raised-button-file"
+              multiple
+              type="file"
+              onChange={this.uploadImage()}
+              />
+            <label htmlFor="raised-button-file">
+              <Button id="uploadButton" variant="contained" 
+              color="primary" 
+              className={classes.buttonSearch} 
+              fullWidth={true} component="span" >
+              Upload your file
+           </Button>
+          </label> 
+          
+          </Grid>
+          <Grid item xs={6}>
+          <Button id="searchButton" 
+              variant="contained" 
+              color="primary" 
+              className={classes.buttonSearch} 
+              
+              onClick={this.searchImage}>
+            Search for a tactile graph
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid id="texthelper" item xs={12}>
           <TextField
           id="outlined-name"
           style={{ margin: 1 }}
@@ -91,30 +136,8 @@ searchImage = (name) => event => {
           variant="outlined"
           />
           </Grid>
-          <Grid container spacing={24}>
-          	<Grid item xs={6}>
-          		<Button id="uploadButton" 
-      			variant="contained" 
-      			color="primary" 
-      			className={classes.button} 
-      			fullWidth={true}
-      			onClick={this.uploadImage}>
-      			Upload your image
-      			</Button>
-      		</Grid>
-      		<Grid item xs={6}>
-      		<Button id="searchButton" 
-          		variant="contained" 
-          		color="primary" 
-          		className={classes.button} 
-          		fullWidth={true}
-          		onClick={this.searchImage}>
-        		Search for a tactile graph
-      			</Button>
-      		</Grid>
-     	  </Grid>
           <Grid item xs={12}>
-          	<ImageGrid/>
+            <ImageGrid/>
 
             <Typography id="subheading" variant="title" align="center" color="textSecondary" paragraph>
               Examples of good images to upload
@@ -129,10 +152,10 @@ searchImage = (name) => event => {
       <Footer />
     </div>
   );
-	}
+  }
 }
 HomePage.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HomePage);
+export default withRouter(withStyles(styles)(HomePage));

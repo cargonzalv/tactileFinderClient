@@ -96,7 +96,7 @@ class EvaluationResultPage extends Component {
 		this.state = {
 			accepted: true,
 			value: 0,
-			image : imageEx,
+			image : URL.createObjectURL(this.props.history.location.state.image),
 			predicting: true,
 			loadingImg: false,
 			predictions: 0,
@@ -249,7 +249,8 @@ class EvaluationResultPage extends Component {
           				min="0" max="100" 
           				value={this.state.value} 
           				onChange={this.getInitialState.bind(this)}
-          				step="0.01"
+						step="0.01"
+						disabled
           				/>
           				{this.renderImageResults()}
           				<Grid container={true} justify='center' alignContent='center' className={classes.leftcontainer}  xs={12} sm={12}>
