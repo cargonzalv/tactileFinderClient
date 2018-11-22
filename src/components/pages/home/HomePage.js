@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import tileData from './tileData';
 
 import './HomePage.css';
 import Footer from '../../shared/HomeFooter';
@@ -47,21 +48,60 @@ const styles = theme => ({
 
 class HomePage extends Component {
 
+  constructor(props) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+ }
 state = {
-    name: ''
+    name: '',
+    data: tileData,
+    typing: false,
+    typingTimeout: 0
   };
 
 handleChange = (name) => event => {
-    this.setState({
-      name: event.target.value,
-    });
-  };
 
-uploadImage = (src) => event => {
-    console.log(event)
+    if (this.state.typingTimeout) {
+       clearTimeout(this.state.typingTimeout);
+    }
+
+    this.setState({
+       name: event.target.value,
+       typing: false,
+       typingTimeout: setTimeout( () => {
+        fetch("https://www.googleapis.com/customsearch/v1?q=dog&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
+        .then((res)=>res.json())
+        .then((json)=>{
+          this.setState({
+            data: json.items.map((d)=>{
+              return {
+                img:d.image.thumbnailLink,
+                title:d.htmlTitle,
+                author:"author"
+              }
+            })
+          })
+        })
+         }, 1000)
+    }); 
+  };
+uploadImageSrc = (ev) => {
+  let src = ev.target.src;
+  fetch(src)
+  .then(res => res.blob())
+  .then(blob => {
+  const file = new File([blob], 'dot.png', blob)
+  this.props.history.push({
+      pathname: '/result',
+      state: { image: file }
+    })
+  })
+};
+uploadImage = () => event => {
+    console.log(event.target.files[0])
     this.props.history.push({
   pathname: '/result',
-  state: { image: event.target.files[0] || src }
+  state: { image: event.target.files[0]  }
 })
   };
 
@@ -127,7 +167,7 @@ searchImage = (name) => event => {
           />
           </Grid>
           <Grid item xs={12}>
-            <ImageGrid uploadImage={this.uploadImage}/>
+            <ImageGrid data={this.state.data} uploadImage={this.uploadImageSrc}/>
 
             <Typography id="subheading" variant="title" align="center" color="textSecondary" paragraph>
               Examples of good images to upload

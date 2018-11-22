@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
-import tileData from './tileData';
 
 const styles = theme => ({
   root: {
@@ -34,7 +33,8 @@ const styles = theme => ({
   imageContainer:{
     minWidth: 250,
     width: "50vw",
-    maxWidth: 350
+    maxWidth: 350,
+    cursor: "pointer",
   }
   
 });
@@ -45,9 +45,9 @@ function ImageGrid(props) {
   return (
     <div className={classes.root}>
       <GridList className={classes.gridList} cols={3} style={{ margin: 15 }}>
-        {tileData.map(tile => (
-          <GridListTile onClick={()=> props.uploadImage(tile.img)} className={classes.imageContainer} key={tile.img}>
-            <img className={classes.images} src={tile.img} alt={tile.title} />
+        {props.data.map(tile => (
+          <GridListTile className={classes.imageContainer} key={tile.img}>
+            <img className={classes.images}  onClick={(ev)=> props.uploadImage(ev)} src={tile.img} alt={tile.title} />
            
           </GridListTile>
         ))}
