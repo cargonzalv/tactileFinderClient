@@ -93,10 +93,11 @@ class EvaluationResultPage extends Component {
 		super(props);
 		this.inputRef = React.createRef();
 		this.image = React.createRef();
+		let history = this.props.history.location.state;
 		this.state = {
 			accepted: true,
 			value: 0,
-			image : this.props.history.location.state.image ? URL.createObjectURL(this.props.history.location.state.image) : imageEx,
+			image : history && history.image ? URL.createObjectURL(this.props.history.location.state.image) : imageEx,
 			predicting: true,
 			loadingImg: false,
 			predictions: 0,

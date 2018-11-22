@@ -57,11 +57,11 @@ handleChange = (name) => event => {
     });
   };
 
-uploadImage = () => event => {
-  
+uploadImage = (src) => event => {
+    console.log(event)
     this.props.history.push({
   pathname: '/result',
-  state: { image: event.target.files[0] }
+  state: { image: event.target.files[0] || src }
 })
   };
 
@@ -92,7 +92,7 @@ searchImage = (name) => event => {
 
           
           <Grid container spacing={24}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
             <input
               accept="image/*"
               className={classes.input}
@@ -112,22 +112,12 @@ searchImage = (name) => event => {
           </label> 
           
           </Grid>
-          <Grid item xs={6}>
-          <Button id="searchButton" 
-              variant="contained" 
-              color="primary" 
-              className={classes.buttonSearch} 
-              
-              onClick={this.searchImage}>
-            Search for a tactile graph
-            </Button>
-          </Grid>
         </Grid>
         <Grid id="texthelper" item xs={12}>
           <TextField
           id="outlined-name"
           style={{ margin: 1 }}
-          label="Search for your image"
+          label="Or search for your image..."
           className={classes.textField}
           fullWidth
           value={this.state.name}
@@ -137,7 +127,7 @@ searchImage = (name) => event => {
           />
           </Grid>
           <Grid item xs={12}>
-            <ImageGrid/>
+            <ImageGrid uploadImage={this.uploadImage}/>
 
             <Typography id="subheading" variant="title" align="center" color="textSecondary" paragraph>
               Examples of good images to upload

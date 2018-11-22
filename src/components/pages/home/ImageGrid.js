@@ -42,12 +42,11 @@ const styles = theme => ({
 
 function ImageGrid(props) {
   const { classes } = props;
-
   return (
     <div className={classes.root}>
       <GridList className={classes.gridList} cols={3} style={{ margin: 15 }}>
         {tileData.map(tile => (
-          <GridListTile className={classes.imageContainer} key={tile.img}>
+          <GridListTile onClick={()=> props.uploadImage(tile.img)} className={classes.imageContainer} key={tile.img}>
             <img className={classes.images} src={tile.img} alt={tile.title} />
            
           </GridListTile>
