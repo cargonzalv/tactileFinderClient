@@ -59,17 +59,17 @@ state = {
     typingTimeout: 0
   };
 
-handleChange = (name) => event => {
-
+handleChange = event => {
+  console.log(event.target)
     if (this.state.typingTimeout) {
        clearTimeout(this.state.typingTimeout);
     }
-
+    
     this.setState({
        name: event.target.value,
        typing: false,
        typingTimeout: setTimeout( () => {
-        fetch("https://www.googleapis.com/customsearch/v1?q=dog&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
+        fetch("https://www.googleapis.com/customsearch/v1?q=" + this.state.name + "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
         .then((res)=>res.json())
         .then((json)=>{
           this.setState({
@@ -82,7 +82,7 @@ handleChange = (name) => event => {
             })
           })
         })
-         }, 1000)
+      }, 1000)
     }); 
   };
 uploadImageSrc = (ev) => {
@@ -161,7 +161,7 @@ searchImage = (name) => event => {
           className={classes.textField}
           fullWidth
           value={this.state.name}
-          onChange={this.handleChange('Search for your image')}
+          onChange={(ev) => this.handleChange(ev)}
           margin="normal"
           variant="outlined"
           />
