@@ -19,7 +19,7 @@ import { withRouter } from 'react-router-dom';
 const styles = theme => ({
   root: {
     flexGrow: 1,
-    marginTop:"2.5em"
+    marginTop:"0.5em"
   },
   button: {
     padding: theme.spacing.unit * 1,
@@ -111,10 +111,7 @@ class TrainingPage extends Component {
             newData.pop();
             
             card.throwOut(-100, -200, ReactSwing.DIRECTION.LEFT);
-            this.setState({
-              positives,
-              data: newData
-            })
+            
           }
           if (e.keyCode == '39') {
             let negatives = this.state.negatives;
@@ -124,10 +121,7 @@ class TrainingPage extends Component {
             
             // throwOut method call
             card.throwOut(100, 200, ReactSwing.DIRECTION.RIGHT);
-            this.setState({
-              negatives,
-              data: newData
-            })
+            
           }
       }
     }
@@ -294,11 +288,10 @@ class TrainingPage extends Component {
       </ReactSwing>
       
       </div>
-      
-      <Typography id="subheading" variant="title" align="center" color="textSecondary" paragraph>
-      Examples of good images to upload
-      </Typography>
-      
+      <div class="tbContainer">
+      <div class="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg class="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fill-rule="evenodd" transform="translate(1 1) rotate(0 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" stroke-width="2.5" rx="3"></rect></g></svg><span class="Va(m)"><span>Bad Image   </span></span></div>
+      <div class="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg class="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fill-rule="evenodd" transform="translate(1 1) rotate(180 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" stroke-width="2.5" rx="3"></rect></g></svg><span class="Va(m)"><span>Good Image</span></span></div>
+      </div>
       </Grid>
       </Paper>
       </Grid>
