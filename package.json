@@ -13,7 +13,10 @@
     "react-dom": "^16.5.2",
     "react-loading": "^2.0.3",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "2.0.3"
+    "react-scripts": "2.0.3",
+    "react-swing": "^2.0.1",
+    "react-swipe-deck": "^0.1.17",
+    "react-tinderable": "^0.1.8"
   },
   "scripts": {
     "start": "react-scripts start",
