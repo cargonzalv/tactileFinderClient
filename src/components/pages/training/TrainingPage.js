@@ -67,8 +67,8 @@ const config = {
   },
   allowedDirections:[ReactSwing.DIRECTION.RIGHT,ReactSwing.DIRECTION.LEFT],
   maximumRotation: 1,
-  minThrowOutDistance: Infinity,
-  maxThrowOutDistance: Infinity
+  minThrowOutDistance: 500,
+  maxThrowOutDistance: 1000
 };
 
 class TrainingPage extends Component {
@@ -91,66 +91,26 @@ class TrainingPage extends Component {
   
   componentDidMount(){
     
-    console.log(this)
     document.onkeydown = (e) => {
-      console.log(e)
-      console.log(this.state.data)
       if(this.state.data.length > 0){
-        console.log(e)
-        e = e || window.event;
+          e = e || window.event;
           // stack.getCard
-          console.log(document.getElementById("card_" + (this.state.data.length-1)))
           const card = this.state.stack.getCard(document.getElementById('card_' + (this.state.data.length-1) ));
           
           console.log('card', card);
           if (e.keyCode == '37') {
-            // throwOut method call
-            let positives = this.state.positives;
-            positives.push(card)
-            let newData = this.state.data;
-            newData.pop();
             
-            card.throwOut(-100, -200, ReactSwing.DIRECTION.LEFT);
-            
+            card.throwOut(-500, 0, ReactSwing.DIRECTION.LEFT);
           }
           if (e.keyCode == '39') {
-            let negatives = this.state.negatives;
-            negatives.push(card)
-            let newData = this.state.data;
-            newData.pop();
             
             // throwOut method call
-            card.throwOut(100, 200, ReactSwing.DIRECTION.RIGHT);
-            
+            card.throwOut(500, 0, ReactSwing.DIRECTION.RIGHT);
           }
       }
     }
   }
   
-  
-  // throwOut Method
-  throwCard() {
-    // ReactSwing Card Directions
-    console.log('ReactSwing.DIRECTION', ReactSwing.DIRECTION);
-    
-    console.log('this.state.stack', this.state.stack);
-    console.log('this.state.stack.getConfig', this.state.stack.getConfig());
-    console.log('this.stackEl', this.stackEl);
-    
-    // ReactSwing Component Childrens
-    const targetEl = this.stackEl.current.childElements[1];
-    console.log('targetEl', targetEl);
-    
-    if (targetEl && targetEl.current) {
-      // stack.getCard
-      const card = this.state.stack.getCard(targetEl.current);
-      
-      console.log('card', card);
-      
-      // throwOut method call
-      card.throwOut(100, 200, ReactSwing.DIRECTION.RIGHT);
-    }
-  }
   
   handleChange = event => {
     console.log(event.target)
@@ -212,7 +172,17 @@ class TrainingPage extends Component {
       })
     }
   }
-  
+
+  discard = (e) => {
+    console.log(e)
+    const card = this.state.stack.getCard(e.target);
+    card.destroy();
+    let newData = this.state.data;
+    newData.pop();
+    this.setState({
+      data: newData
+    })
+  }
   
   searchImage = (name) => event => {
     this.setState({
@@ -236,8 +206,7 @@ class TrainingPage extends Component {
   render() {
     const { classes } = this.props;
     const cards = this.state.data.map((d,i  )=>{
-      console.log(d)
-        return (<div id={`card_${i}`} className="card clubs" ref="card1">
+        return (<div key={i} id={`card_${i}`} className="card clubs" ref="card1">
         <img className="imageNoDrag" src={d.img} alt={d.title} />
         </div>)
     })
@@ -278,19 +247,19 @@ class TrainingPage extends Component {
       <div id="viewport">
       <ReactSwing
       className="stack"
-      tagName="div"
       setStack={stack => this.setState({ stack })}
       ref={this.stackEl}
       config={config}
       throwout={e => this.handleThrow(e)}
+      throwoutend={e => this.discard(e)}
       >
       {this.state.data.length ? cards : <div></div>}
       </ReactSwing>
       
       </div>
-      <div class="tbContainer">
-      <div class="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg class="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fill-rule="evenodd" transform="translate(1 1) rotate(0 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" stroke-width="2.5" rx="3"></rect></g></svg><span class="Va(m)"><span>Bad Image   </span></span></div>
-      <div class="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg class="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fill-rule="evenodd" transform="translate(1 1) rotate(180 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" stroke-width="2.5" rx="3"></rect></g></svg><span class="Va(m)"><span>Good Image</span></span></div>
+      <div className="tbContainer">
+      <div className="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg className="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fillRule="evenodd" transform="translate(1 1) rotate(0 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" strokeWidth="2.5" rx="3"></rect></g></svg><span className="Va(m)"><span>Bad Image   </span></span></div>
+      <div className="recsToolbar__tip Flxs(0) Fz($2xs) Fw($bold) Tt(u) Whs(nw) C($c-secondary) Trsdu($fast) Trsp($opacity) Mstart(12px)"><svg className="Sq(20px) Mend(4px)" width="22px" height="22px" viewBox="0 0 22 22"><g fill="none" fillRule="evenodd" transform="translate(1 1) rotate(180 10 10)"><path fill="#b1b8c2" d="M4.3884 10.409l1.2264.9845L7.4 12.8265l1.2265.9846c.491.3943.8926.208.8926-.4134v-1.908c.743-.106 3.5745-.444 4.1978-.5328.7422-.106 1.2895-.5682 1.2895-1.2625v-.003c0-.6944-.5473-1.1566-1.2895-1.2626-.6233-.0888-3.4547-.4268-4.1976-.533V5.988c0-.6216-.4016-.8075-.8925-.4136L7.4 6.5588c-.4908.394-1.2943 1.0388-1.7852 1.433l-1.2264.9843c-.491.3944-.491 1.039 0 1.433"></path><rect width="20" height="20" stroke="#b1b8c2" strokeWidth="2.5" rx="3"></rect></g></svg><span className="Va(m)"><span>Good Image</span></span></div>
       </div>
       </Grid>
       </Paper>
