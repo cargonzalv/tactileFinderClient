@@ -68,7 +68,7 @@ const config = {
   allowedDirections:[ReactSwing.DIRECTION.RIGHT,ReactSwing.DIRECTION.LEFT],
   maximumRotation: 1,
   minThrowOutDistance: 500,
-  maxThrowOutDistance: 1000
+  maxThrowOutDistance: 650
 };
 
 class TrainingPage extends Component {
@@ -129,6 +129,7 @@ class TrainingPage extends Component {
           console.log(this.inputRef)
           event.target.blur()
           console.log(json)
+          if(json.items)
           this.setState({
             data: json.items.map((d)=>{
               return {
