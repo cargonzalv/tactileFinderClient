@@ -42,6 +42,10 @@ const styles = theme => ({
     lineHeight: "1.14286em",
     marginLeft: "-.04em",
     letterSpacing: "-.04em"
+  },
+  train:{
+    right:"10vw",     
+    position: "absolute"
   }
 });
 
@@ -69,7 +73,7 @@ handleChange = event => {
        name: event.target.value,
        typing: false,
        typingTimeout: setTimeout( () => {
-        fetch("https://www.googleapis.com/customsearch/v1?q=" + this.state.name + "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
+        fetch("https://www.googleapis.com/customsearch/v1/siterestrict?q=" + this.state.name + "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
         .then((res)=>res.json())
         .then((json)=>{
           this.setState({
@@ -117,7 +121,11 @@ searchImage = (name) => event => {
       <Grid container >
       <Grid className="specialGrid" item xs={1}>
        </Grid>
+       <Grid className={classes.train} item xs={4}>
+            <a href="/train">...Or help us train our model!</a>
+          </Grid>
         <Grid item xs={10}>
+          
           <Paper className={classes.paper}>
           <Grid item xs={12}>
             <Typography className={classes.title} color="inherit" noWrap>
