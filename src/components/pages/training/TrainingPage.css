@@ -6,6 +6,10 @@ input {
 	width: 50px;
 }
 
+body{
+	overflow-y: hidden;
+}
+
 #viewport {
 	width: 300px;
 	height: 300px;

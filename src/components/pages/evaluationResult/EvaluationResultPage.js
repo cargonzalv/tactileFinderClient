@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import imageEx from '../../../images/elephantExample.png';
-import loaderGif from "../../../images/loader.gif";
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Footer from '../../shared/Footer';
@@ -77,6 +76,17 @@ const styles = theme => ({
     top: "40%", 
     left: "50%",
 	transform: "translate(-50%,-50%)",
+  },
+  loaderText:{
+	position: "relative", /* Sit on top of the page content */
+    width: "20%", /* Full width (cover the whole page) */
+    height: "200px", 
+    top: "50%", 
+    left: "50%",
+	transform: "translate(-50%,-50%)",
+	zIndex:1001,
+	fontSize:12,
+	color: "white"
   },
   inputFile:{
 	width: "100%",
@@ -224,6 +234,7 @@ class EvaluationResultPage extends Component {
 				{(this.state.predicting || this.state.loadingImg) && this.state.showLoader ?
 				<div className={classes.loaderContainer}>
 					<Loading className={classes.loader} type={"spin"} color={colors["blue"]}/>
+					<h3 className={classes.loaderText}>Loading Maching Learning Model... please have patience</h3>
 				</div>:""}
 				<Grid container>
 
