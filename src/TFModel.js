@@ -16,14 +16,12 @@
 */
 
 import * as tf from '@tensorflow/tfjs';
-import firebase from "./firebase";
 import {ControllerDataset} from "./controller_dataset";
 const modelData = require("./tfmodel/mobilenet_1.0_224/weights_manifest.json")
-const storage = firebase.storage().ref();
 
 
 
-const model = storage.child("mobilenet/model.pb");
+let model;
 
 // The dataset object where we will store activations.
 const controllerDataset = new ControllerDataset(2);

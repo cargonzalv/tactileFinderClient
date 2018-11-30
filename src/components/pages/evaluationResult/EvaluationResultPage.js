@@ -234,7 +234,7 @@ class EvaluationResultPage extends Component {
 				{(this.state.predicting || this.state.loadingImg) && this.state.showLoader ?
 				<div className={classes.loaderContainer}>
 					<Loading className={classes.loader} type={"spin"} color={colors["blue"]}/>
-					<h3 className={classes.loaderText}>Loading Maching Learning Model... please have patience</h3>
+					{this.state.predicting && <h3 className={classes.loaderText}>Loading Maching Learning Model... please have patience</h3>}
 				</div>:""}
 				<Grid container>
 
