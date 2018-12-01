@@ -12,7 +12,7 @@ import ReactSwing from "react-swing";
 import { CSSTransitionGroup } from "react-transition-group"; // ES6
 import { TFModel } from "../../../TFModelCopy";
 import "./TrainingPage.css";
-import Footer from "./TrainFooter";
+import NavBar from "../../shared/NavBar";
 import { withRouter } from "react-router-dom";
 import Loading from "react-loading";
 import { DataStorage } from "@tensorflow/tfjs";
@@ -49,7 +49,9 @@ const getBase64FromImageUrl = img => {
 const styles = theme => ({
   root: {
     flexGrow: 1,
-    marginTop: "0.5em"
+  },
+  optimize:{
+    float:"right"
   },
   button: {
     padding: theme.spacing.unit * 1,
@@ -69,7 +71,7 @@ const styles = theme => ({
     marginRight: theme.spacing.unit
   },
   title: {
-    fontSize: "4rem",
+    fontSize: "3rem",
     fontWeight: 300,
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     lineHeight: "1.14286em",
@@ -95,6 +97,9 @@ const styles = theme => ({
     top: "40%",
     left: "50%",
     transform: "translate(-50%,-50%)"
+  },
+  searchEngine:{
+    marginBottom:30
   }
 });
 
@@ -140,16 +145,8 @@ class TrainingPage extends Component {
     dissapearing: false,
     loadingModel: false,
     page: 0,
-    isClipArt: false
+    isClipArt: true
   };
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (prevProps.data.length !== this.state.data.length) {
-      if (this.state.data.length < 5) {
-        //this.searchImages();
-      }
-    }
-  }
 
   componentDidMount() {
     this.model = new TFModel();
@@ -175,20 +172,23 @@ class TrainingPage extends Component {
   }
 
   searchImages = async (page = 1) => {
-    let query = await queriesRef.doc(this.state.name).get();
+    let query = await queriesRef
+      .doc(this.state.name + this.state.isClipArt ? " ClipArt" : "")
+      .get();
 
     page = query.exists ? query.data().page : page;
     this.setState({
       page: page
     });
-    let type = this.state.isClipArt ? "&imgType=clipart&imgColorType=gray&imgDominantColor=white" : "";
+    let type = this.state.isClipArt
+      ? "/siterestrict?imgType=clipart&imgColorType=gray&imgDominantColor=white&imgDominantColor=gray&imgDominantColor=black&q="
+      : "?q=";
     //ahora quito el siterestrict para training
     let result = await fetch(
-      "https://www.googleapis.com/customsearch/v1/siterestrict?q=" +
-        this.state.name +
-        "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG" +
+      "https://www.googleapis.com/customsearch/v1" +
         type +
-        "&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI&start=" +
+        this.state.name +
+        "&cx=015464166180940179903:65zdubuzn5a&searchType=image&filter=1&key=AIzaSyAxCUKf2d2dIpFV0lnZ7VslvW4mqp9TQOU&start=" +
         page
     );
     let json = await result.json();
@@ -197,34 +197,36 @@ class TrainingPage extends Component {
       let res = await allRef.doc("data").get();
       let newData;
       if (!res.exists) {
-        newData = this.state.data.concat(
-          json.items.map(d => {
-            return {
-              img: d.image.thumbnailLink,
-              title: d.htmlTitle,
-              author: "author"
-            };
-          })
-        );
+        let data = json.items.map(d => {
+          return {
+            img: d.image.thumbnailLink,
+            title: d.htmlTitle,
+            author: "author",
+            link: d.link
+          };
+        });
+        newData = data.concat(this.state.data);
       } else {
         let data = json.items.filter(d => {
-          let url = d.image.thumbnailLink.split("q=tbn:")[1];
+          let url = d.link;
           return !res.data().data.includes(url);
         });
-        console.log(data);
-        newData = this.state.data.concat(
-          data.map(d => {
-            return {
-              img: d.image.thumbnailLink,
-              title: d.htmlTitle,
-              author: "author"
-            };
-          })
-        );
+        data = data.map(d => {
+          return {
+            img: d.image.thumbnailLink,
+            title: d.htmlTitle,
+            author: "author",
+            link: d.link
+          };
+        });
+        newData = data.concat(this.state.data);
       }
       this.setState({
-        data: newData
+        data: newData,
+        searching: false
       });
+    } else {
+      this.setState({ searching: false });
     }
   };
 
@@ -238,22 +240,16 @@ class TrainingPage extends Component {
     this.setState({
       name: event.target.value,
       typing: false,
+      searching: true,
       typingTimeout: setTimeout(() => {
-        this.searchImages();
-      }, 1000)
+        if (event.target.value.trim().length > 0) {
+          this.setState({
+            data: []
+          });
+          this.searchImages();
+        }
+      }, 500)
     });
-  };
-  uploadImageSrc = ev => {
-    let src = ev.target.src;
-    fetch(src)
-      .then(res => res.blob())
-      .then(blob => {
-        const file = new File([blob], "dot.png", blob);
-        this.props.history.push({
-          pathname: "/result",
-          state: { image: file }
-        });
-      });
   };
   handleThrow = async e => {
     this.setState({
@@ -264,16 +260,45 @@ class TrainingPage extends Component {
     let image = getBase64FromImageUrl(e.target.childNodes[1]);
 
     if (dir.toString().includes("LEFT")) {
-      this.addToFirestore("negatives", image, e);
+      await this.addToFirestore("negatives", image, e);
     } else {
-      this.addToFirestore("positives", image, e);
+      await this.addToFirestore("positives", image, e);
     }
-    this.addToFirestore(
+    console.log(this.state.data);
+    console.log(e.target.childNodes[1].src);
+    await this.addToFirestore(
       "all",
-      e.target.childNodes[1].src.split("q=tbn:")[1],
-      e
+      this.state.data.find(d => d.img == e.target.childNodes[1].src).link
     );
+    
   };
+
+  disposeData = () => {
+    let newData = this.state.data;
+    newData.pop();
+    setTimeout(()=>{
+      this.setState(
+        {
+          dissapearing: false,
+          data: newData
+        },
+        () => {
+          console.log(this.state.data.length);
+          if (this.state.data.length < 5) {
+            let page = this.state.page + 10;
+            queriesRef
+              .doc(this.state.name + (this.state.isClipArt ? " ClipArt" : ""))
+              .set({
+                page: page
+              });
+            if (page <= 91) this.searchImages(page);
+          }
+        }
+      );
+    },1000)
+    
+    
+  }
 
   addToFirestore = async (direction, data) => {
     let ref = direction != "all" ? dataRef : allRef;
@@ -291,7 +316,7 @@ class TrainingPage extends Component {
         })
         .then(() => {
           console.log("set!");
-          this.setState({ dissapearing: false });
+          this.disposeData();
         })
         .catch(err => {
           console.log(err.code);
@@ -302,7 +327,7 @@ class TrainingPage extends Component {
                 data: [data]
               })
               .then(() => {
-                this.setState({ dissapearing: false });
+                this.disposeData();
               });
           }
         });
@@ -310,9 +335,7 @@ class TrainingPage extends Component {
   };
 
   discard = e => {
-    this.setState({ dissapearing: true });
 
-    console.log(e);
     // Remove swing eventlisteners from card
     this.state.stack.getCard(e.target).destroy();
     //Fade out card and remove it from DOM afterwards
@@ -323,26 +346,6 @@ class TrainingPage extends Component {
     });
     e.target.className += " dissapearing";
 
-    setTimeout(() => {
-      let newData = this.state.data;
-      newData.pop();
-      this.setState(
-        {
-          dissapearing: false,
-          data: newData
-        },
-        () => {
-          console.log(this.state.data.length);
-          if (this.state.data.length < 3) {
-            let page = this.state.page + 10;
-            queriesRef.doc(this.state.name).set({
-              page: page
-            });
-            this.searchImages(page);
-          }
-        }
-      );
-    }, 300);
   };
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -389,6 +392,8 @@ class TrainingPage extends Component {
 
     return (
       <div className={classes.root}>
+              <NavBar history={this.props.history}></NavBar>
+
         {this.state.loadingModel ? (
           <div className={classes.loaderContainer}>
             <Loading
@@ -400,38 +405,18 @@ class TrainingPage extends Component {
         ) : (
           ""
         )}
-
         <Grid container>
           <Grid className="specialGrid" item xs={1} />
           <Grid item xs={10}>
-            <Paper className={classes.paper}>
+            <div className={classes.paper}>
               <Grid item xs={12}>
                 <Typography className={classes.title} color="inherit" noWrap>
                   Train the model!
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
-                <Typography
-                  id="subheading"
-                  variant="title"
-                  align="center"
-                  color="textSecondary"
-                  paragraph
-                >
-                  Help us make more tactile graphs available
-                </Typography>
-              </Grid>
-
-              <Grid id="texthelper" item xs={12}>
-                <label>
-                  Optimize search (get more good ones):
-                  <input
-                    name="clipArt"
-                    type="checkbox"
-                    checked={this.state.isClipArt}
-                    onChange={()=>this.setState({isClipArt: !this.state.isClipArt, name: ""})}
-                  />
-                </label>
+              
+              <Grid id="texthelper" className={classes.searchEngine} item xs={12}>
+                
                 <TextField
                   id="outlined-name"
                   style={{ margin: 1 }}
@@ -444,6 +429,21 @@ class TrainingPage extends Component {
                   margin="normal"
                   variant="outlined"
                 />
+                <label className={classes.optimize}>
+                  Optimized search (finds better images):
+                  <input
+                    name="clipArt"
+                    type="checkbox"
+                    checked={this.state.isClipArt}
+                    onChange={() =>
+                      this.setState({
+                        isClipArt: !this.state.isClipArt,
+                        name: "",
+                        data: []
+                      })
+                    }
+                  />
+                </label>
               </Grid>
               <Grid item xs={12}>
                 <div id="viewport">
@@ -455,7 +455,17 @@ class TrainingPage extends Component {
                     throwout={e => this.handleThrow(e)}
                     throwoutend={e => this.discard(e)}
                   >
-                    {this.state.data.length ? cards : <div />}
+                    {this.state.data.length ? (
+                      cards
+                    ) : this.state.name.trim().length > 0 &&
+                      !this.state.searching ? (
+                      <div>
+                        No se han encontrado más resultados. Prueba con otra
+                        búsqueda
+                      </div>
+                    ) : (
+                      <div />
+                    )}
                   </ReactSwing>
                 </div>
                 <div className="tbContainer">
@@ -521,11 +531,10 @@ class TrainingPage extends Component {
                   </div>
                 </div>
               </Grid>
-            </Paper>
+            </div>
           </Grid>
           <Grid className="specialGrid" item xs={1} />
         </Grid>
-        <Footer />
       </div>
     );
   }

@@ -10,6 +10,7 @@ import tileData from './tileData';
 
 import './HomePage.css';
 import Footer from '../../shared/HomeFooter';
+import logo from "../../../images/Logo.png"
 import { withRouter } from 'react-router-dom';
 import ImageGrid from './ImageGrid'
 
@@ -73,7 +74,7 @@ handleChange = event => {
        name: event.target.value,
        typing: false,
        typingTimeout: setTimeout( () => {
-        fetch("https://www.googleapis.com/customsearch/v1/siterestrict?q=" + this.state.name + "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
+        fetch("https://www.googleapis.com/customsearch/v1/siterestrict?q=" + this.state.name + "&cx=015464166180940179903%3A-60lix4pnzk&fileType=png%2Cjpg%2Cjpeg%2CJPG&imgColorType=gray&imgDominantColor=white&imgDominantColor=gray&imgDominantColor=black&imgType=clipart&searchType=image&key=AIzaSyB4HH7P3KzLlaFjVbPszroBclnfA5awyzI")
         .then((res)=>res.json())
         .then((json)=>{
           this.setState({
@@ -128,9 +129,8 @@ searchImage = (name) => event => {
           
           <Paper className={classes.paper}>
           <Grid item xs={12}>
-            <Typography className={classes.title} color="inherit" noWrap>
-            Tactiled
-            </Typography>
+            <img className={classes.title} src={logo} color="inherit">
+            </img>
           </Grid>
           <Grid item xs={12}>
             <Typography id="subheading" variant="title" align="center" color="textSecondary" paragraph>
@@ -187,7 +187,7 @@ searchImage = (name) => event => {
         <Grid className="specialGrid" item xs={1}>
         </Grid>
       </Grid>
-      <Footer />
+      <Footer/>
     </div>
   );
   }
