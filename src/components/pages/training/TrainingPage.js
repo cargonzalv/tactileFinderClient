@@ -10,12 +10,10 @@ import firebase from "../../../firebase";
 import Button from "@material-ui/core/Button";
 import ReactSwing from "react-swing";
 import { CSSTransitionGroup } from "react-transition-group"; // ES6
-import { TFModel } from "../../../TFModelCopy";
 import "./TrainingPage.css";
 import NavBar from "../../shared/NavBar";
 import { withRouter } from "react-router-dom";
 import Loading from "react-loading";
-import { DataStorage } from "@tensorflow/tfjs";
 import firebase2 from "firebase/app";
 
 const firestore = firebase.firestore();
@@ -149,7 +147,6 @@ class TrainingPage extends Component {
   };
 
   componentDidMount() {
-    this.model = new TFModel();
 
     document.onkeydown = e => {
       if (this.state.data.length > 0 && !this.state.dissapearing) {

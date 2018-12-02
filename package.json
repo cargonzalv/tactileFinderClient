@@ -17,7 +17,8 @@
     "react-scripts": "2.0.3",
     "react-swing": "^2.0.1",
     "react-swipe-deck": "^0.1.17",
-    "react-tinderable": "^0.1.8"
+    "react-tinderable": "^0.1.8",
+    "url": "^0.11.0"
   },
   "scripts": {
     "start": "react-scripts start",

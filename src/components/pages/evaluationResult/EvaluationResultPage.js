@@ -8,10 +8,33 @@ import Button from "@material-ui/core/Button";
 import Footer from "../../shared/Footer";
 import TextField from "@material-ui/core/TextField";
 import "./EvaluationResultPage.css";
-import { TFModel } from "../../../TFModel.js";
 import Loading from "react-loading";
+import MenuItem from "@material-ui/core/MenuItem";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
 import NavBar from "../../shared/NavBar";
+import Select from "@material-ui/core/Select";
+import firebase from "../../../firebase";
 import { TableBody } from "@material-ui/core";
+
+const firestore = firebase.firestore();
+
+firestore.settings({
+  timestampsInSnapshots: true
+});
+
+const dataRef = firestore.collection("Data");
+
+const getBase64FromImageUrl = img => {
+  var canvas = document.createElement("canvas");
+  canvas.width = 224;
+  canvas.height = 224;
+  var ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  var dataURL = canvas.toDataURL("image/jpg");
+  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+};
 
 let colors = {
   green: "#008744",
@@ -27,10 +50,10 @@ const styles = theme => ({
     marginBottom: "1.7em"
   },
   container: {
-	position: "absolute",
+    position: "absolute",
 
-	top: "50%",
-	transform: "translate(0,-50%)",
+    top: "50%",
+    transform: "translate(0,-50%)"
   },
   title: {
     marginTop: "10px",
@@ -61,37 +84,6 @@ const styles = theme => ({
     width: "100%",
     "max-width": "100%"
   },
-  loaderContainer: {
-    position: "fixed" /* Sit on top of the page content */,
-    display: "block" /* Hidden by default */,
-    width: "100%" /* Full width (cover the whole page) */,
-    height: "100%" /* Full height (cover the whole page) */,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)" /* Black background with opacity */,
-    zIndex: 1000 /* Specify a stack order in case you're using a different order for other  */
-  },
-  loader: {
-    position: "relative" /* Sit on top of the page content */,
-    width: "200px" /* Full width (cover the whole page) */,
-    height: "200px",
-    top: "40%",
-    left: "50%",
-    transform: "translate(-50%,-50%)"
-  },
-  loaderText: {
-    position: "relative" /* Sit on top of the page content */,
-    width: "20%" /* Full width (cover the whole page) */,
-    height: "200px",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%,-50%)",
-    zIndex: 1001,
-    fontSize: 12,
-    color: "white"
-  },
   inputFile: {
     width: "100%",
     height: "100%",
@@ -107,93 +99,93 @@ class EvaluationResultPage extends Component {
     super(props);
     this.inputRef = React.createRef();
     this.image = React.createRef();
+
     let history = this.props.history.location.state;
     var urlCreator = window.URL || window.webkitURL;
     console.log(history);
     this.state = {
       accepted: true,
-      value: 0,
+      showClassify: false,
+      value: history.score,
+      category: history.score >= 50 ? "Positive" : "Negative",
       image:
         history && history.image
-          ? urlCreator.createObjectURL(this.props.history.location.state.image)
+          ? urlCreator.createObjectURL(history.image)
           : imageEx,
-      predicting: true,
       loadingImg: false,
-      predictions: 0,
-      showLoader: true,
-      changeTimeout: 0
+      name:""
     };
-    this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
-    this.getImageScore = this.getImageScore.bind(this);
+    // this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+    // this.getImageScore = this.getImageScore.bind(this);
     this.model = null;
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    let startingPredict = !prevState.predicting && this.state.predicting;
-    let startingLoad = !prevState.loadingImg && this.state.loadingImg;
-    if (startingPredict || startingLoad) {
-      this.setState({ showLoader: false });
-      setTimeout(() => {
-        this.setState({ showLoader: true });
-      }, 200);
-    }
-  }
+  // componentDidUpdate(prevProps, prevState) {
+  //   let startingPredict = !prevState.predicting && this.state.predicting;
+  //   let startingLoad = !prevState.loadingImg && this.state.loadingImg;
+  //   if (startingPredict || startingLoad) {
+  //     this.setState({ showLoader: false });
+  //     setTimeout(() => {
+  //       this.setState({ showLoader: true });
+  //     }, 200);
+  //   }
+  // }
   async componentDidMount() {
-    this.model = new TFModel();
-    console.time("Loading of model");
-    await this.model.load();
-    console.timeEnd("Loading of model");
-    this.getImageScore();
+    // this.model = new TFModel();
+    // console.time("Loading of model");
+    // await this.model.load();
+    // console.timeEnd("Loading of model");
+    // this.getImageScore();
   }
-  async getImageScore() {
-    this.setState({ predicting: true });
-    let inputImage = document.getElementById("inputImage").cloneNode();
-    console.log(inputImage);
+  // async getImageScore() {
+  //   this.setState({ predicting: true });
+  //   let inputImage = document.getElementById("inputImage").cloneNode();
+  //   console.log(inputImage);
 
-    console.time("First prediction");
-    let result = this.model.predict(inputImage);
-    console.log(result);
-    const prediction = await this.model.getTopKClasses(result);
-    console.timeEnd("First prediction");
-    console.log(prediction);
-    let predValue = prediction.find(p => p.label == "positive").value * 100;
-    this.setState({
-      value: Math.round(predValue * 100) / 100,
-      predicting: false,
-      showLoader: false,
-      predictions: this.state.predictions + 1
-    });
-  }
+  //   console.time("First prediction");
+  //   let result = this.model.predict(inputImage);
+  //   console.log(result);
+  //   const prediction = await this.model.getTopKClasses(result);
+  //   console.timeEnd("First prediction");
+  //   console.log(prediction);
+  //   let predValue = prediction.find(p => p.label == "positive").value * 100;
+  //   this.setState({
+  //     value: Math.round(predValue * 100) / 100,
+  //     predicting: false,
+  //     showLoader: false,
+  //     predictions: this.state.predictions + 1
+  //   });
+  // }
 
-  fileSelectedHandler(event) {
-    console.log(event);
-    if (event.target.files && event.target.files[0]) {
-      console.log(event.target.files[0]);
-      let reader = new FileReader();
-      reader.onload = e => {
-        console.log("loadedddd");
-        this.setState({ image: e.target.result, loadingImg: false });
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    } else {
-      this.setState({ loadingImg: false });
-    }
-  }
+  // fileSelectedHandler(event) {
+  //   console.log(event);
+  //   if (event.target.files && event.target.files[0]) {
+  //     console.log(event.target.files[0]);
+  //     let reader = new FileReader();
+  //     reader.onload = e => {
+  //       console.log("loadedddd");
+  //       this.setState({ image: e.target.result, loadingImg: false });
+  //     };
+  //     reader.readAsDataURL(event.target.files[0]);
+  //   } else {
+  //     this.setState({ loadingImg: false });
+  //   }
+  // }
   handleImgLoad() {
     if (this.state.predictions) {
       this.getImageScore();
     }
   }
-  handleUploadClick() {
-    this.setState({ loadingImg: true });
-    document.body.onfocus = () => {
-      let input = document.getElementById("file-upload");
-      if (this.state.inputImage == input.value || input.value.length == 0) {
-        this.setState({ loadingImg: false });
-      }
-    };
-    this.inputRef.current.click();
-  }
+  // handleUploadClick() {
+  //   this.setState({ loadingImg: true });
+  //   document.body.onfocus = () => {
+  //     let input = document.getElementById("file-upload");
+  //     if (this.state.inputImage == input.value || input.value.length == 0) {
+  //       this.setState({ loadingImg: false });
+  //     }
+  //   };
+  //   this.inputRef.current.click();
+  // }
   renderResultTitle() {
     const { classes } = this.props;
 
@@ -261,6 +253,15 @@ class EvaluationResultPage extends Component {
       name: event.target.value
     });
   };
+  sendFeedBack = () => {
+    let img = getBase64FromImageUrl(document.getElementById("inputImage"));
+    let data = { image: img, label: this.state.name, direction: this.state.category }
+
+    dataRef.doc().set(data)
+    .then(()=>{
+      alert("Feedback sent!")
+    })
+  }
 
   render() {
     const { classes } = this.props;
@@ -290,8 +291,8 @@ class EvaluationResultPage extends Component {
           </div>
         ) : (
           ""
-		)}
-		<NavBar history={this.props.history}></NavBar>
+        )}
+        <NavBar history={this.props.history} />
         <Grid container className={classes.container}>
           <Grid item xs={12} sm={6}>
             {this.renderResultTitle()}
@@ -317,7 +318,7 @@ class EvaluationResultPage extends Component {
                 sm={12}
                 className={classes.buttonCase}
               >
-                <Button
+                {/* <Button
                   variant="outlined"
                   disabled={
                     this.state.loadingImg ||
@@ -339,7 +340,7 @@ class EvaluationResultPage extends Component {
                     className={classes.inputFile}
                     type="file"
                   />
-                </Button>
+                </Button> */}
                 <Button
                   variant="outlined"
                   color="primary"
@@ -381,45 +382,105 @@ class EvaluationResultPage extends Component {
               xs={12}
               sm={12}
             >
-              <Grid
-                container={true}
-                justify="center"
-                alignContent="center"
-                item
-                xs={12}
-                sm={3}
+              <Button
+                variant="outlined"
+                color="blue"
+                className={classes.inputbutton}
+                onClick={() =>
+                  this.setState({ showClassify: !this.state.showClassify })
+                }
               >
-                <Button
-                  variant="outlined"
-                  color="default"
-                  className={classes.inputbutton}
-                >
-                  Add the label!
-                </Button>
-              </Grid>
-              <Grid
-                container={true}
-                justify="center"
-                alignContent="center"
-                item
-                xs={12}
-                sm={9}
-              >
-                <TextField
-                  style={{ margin: 1 }}
-                  label="Add identifying labels to help!"
-                  className={classes.textField}
-                  fullWidth
-                  value={this.state.name}
-                  onChange={this.handleChange("Search for your image")}
-                  margin="normal"
-                  variant="outlined"
-                />
-              </Grid>
+                {!this.state.showClassify
+                  ? "Doesn't make sense? Reclassify the image!"
+                  : "Hide Classifier"}
+              </Button>
             </Grid>
+            {this.state.showClassify && (
+              <Grid
+                container={true}
+                justify="center"
+                alignContent="center"
+                className={classes.leftcontainer}
+                xs={12}
+                sm={12}
+              >
+                <Grid
+                  container={true}
+                  justify="center"
+                  alignContent="center"
+                  item
+                  xs={12}
+                  sm={3}
+                >
+                  <FormControl
+                    variant="outlined"
+                    className={classes.formControl}
+                  >
+                    <InputLabel
+                      ref={ref => {
+                        this.InputLabelRef = ref;
+                      }}
+                      htmlFor="outlined-age-simple"
+                    >
+                      Quality
+                    </InputLabel>
+                    <Select
+                      value={this.state.category}
+                      onChange={e => {
+                        this.setState({
+                          category:
+                            this.state.category == "Positive"
+                              ? "Negative"
+                              : "Positive"
+                        });
+                      }}
+                      input={
+                        <OutlinedInput
+                          labelWidth={this.state.labelWidth}
+                          name="age"
+                          id="outlined-age-simple"
+                        />
+                      }
+                    >
+                      <MenuItem value={"Positive"}>Good</MenuItem>
+                      <MenuItem value={"Negative"}>Bad</MenuItem>
+                    </Select>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      className={classes.button}
+                      onClick={() => this.sendFeedBack()}
+                      disabled={this.state.name.length == 0}
+                      
+                    >
+                      Send Feedback
+                    </Button>
+                  </FormControl>
+                </Grid>
+                <Grid
+                  container={true}
+                  justify="center"
+                  alignContent="center"
+                  item
+                  xs={12}
+                  sm={9}
+                >
+                  <TextField
+                    style={{ margin: 1 }}
+                    label="Add identifying labels describing the photo!"
+                    className={classes.textField}
+                    fullWidth
+                    value={this.state.name}
+                    onChange={this.handleChange("Search for your image")}
+                    margin="normal"
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+            )}
           </Grid>
         </Grid>
-		<Footer />
+        <Footer />
       </div>
     );
   }
