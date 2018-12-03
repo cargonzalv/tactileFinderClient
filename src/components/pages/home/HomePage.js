@@ -107,7 +107,7 @@ class HomePage extends Component {
       console.log("finished");
       console.log("requesting...");
       this.setState({ predicting: true });
-      fetch("http://localhost:5001/tactiled/us-central1/predictMultiple", {
+      fetch("https://tactiled.firebaseapp.com/api/predictMultiple", {
         method: "POST",
         headers: {
           Accept: "application/json",
