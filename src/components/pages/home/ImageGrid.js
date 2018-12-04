@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import GridList from "@material-ui/core/GridList";
@@ -6,7 +6,7 @@ import GridListTile from "@material-ui/core/GridListTile";
 import Typography from "@material-ui/core/Typography";
 import "./HomePage.css";
 import Loading from "react-loading";
-
+import { fromBits } from "long";
 
 let colors = {
   green: "#008744",
@@ -50,45 +50,87 @@ const styles = theme => ({
   }
 });
 
-function ImageGrid(props) {
-  const { classes } = props;
+function toDataURL(src, callback) {
+  var img = new Image();
+  img.crossOrigin = 'Anonymous';
+  img.onload = function() {
+    var canvas = document.createElement('CANVAS');
+    var ctx = canvas.getContext('2d');
+    var dataURL;
+    canvas.height = this.naturalHeight;
+    canvas.width = this.naturalWidth;
+    ctx.drawImage(this, 0, 0);
+    dataURL = canvas.toDataURL("image/jpg");
+    callback(dataURL.replace(/^data:image\/(png|jpg);base64,/, ""));
+  };
+  img.src = src;
+  if (img.complete || img.complete === undefined) {
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+    img.src = src;
+  }
+}
 
-  return (
-    <div className={classes.root}>
-      <GridList className={classes.gridList} cols={3} style={{ margin: 15 }}>
-        {props.data.map((tile, i) => (
-          <GridListTile
-            className={"gridTile " + classes.imageContainer}
-            key={tile.img}
-          >
-            <img
-              id={"img" + i}
-              className={"image " + classes.images}
-              onClick={ev => props.uploadImage(ev,i)}
-              src={tile.img}
-              alt={tile.title}
-              crossOrigin="Anonymous"
-            />
-            {tile.score >= 80 && 
-            <span className="stamp good">Great!</span>}
-            {tile.score >= 30 && tile.score < 80 && 
-            <span className="stamp">Fair</span>}
-            {tile.score < 30 && 
-            <span className="stamp bad">Bad</span>}
-            {tile.score == undefined && 
+
+class ImageGrid extends React.Component {
+  constructor(props) {
+    super(props);  
+
+  }
+  componentDidUpdate(prevProps) {
+    if(prevProps.data !== this.props.data && this.props.data.length > 0){
+      let buffers = [];
+
+      this.props.data.map((d,i)=>{
+        toDataURL(d.img, (base64)=>{
+          buffers.push(base64)
+          if(i == this.props.data.length - 1){
+            this.props.addImages(buffers)
+          }
+        })
+      })
+      console.log(buffers)
+
+      //this.props.addImage
+    }
+  }
+  render() {
+    const { classes } = this.props;
+
+    return (
+      <div className={classes.root}>
+        <GridList ref={this.grid} className={classes.gridList} cols={3} style={{ margin: 15 }}>
+          {this.props.data.map((tile, i) => (
+            <GridListTile
+              className={"gridTile " + classes.imageContainer}
+              key={tile.img}
+            >
+              <img
+                crossOrigin="Anonymous"
+                id={"img" + i}
+                className={"image " + classes.images}
+                onClick={ev => this.props.uploadImage(ev, i)}
+                src={tile.img}
+                alt={tile.title}
+              />
+              {tile.score >= 80 && <span className="stamp good">Great!</span>}
+              {tile.score >= 30 && tile.score < 80 && (
+                <span className="stamp">Fair</span>
+              )}
+              {tile.score < 30 && <span className="stamp bad">Bad</span>}
+              {tile.score == undefined && (
                 <Loading
                   className="loader"
                   type={"spinningBubbles"}
                   color={colors["blue"]}
                 />
-            }
-          }
-
-          </GridListTile>
-        ))}
-      </GridList>
-    </div>
-  );
+              )}
+              }
+            </GridListTile>
+          ))}
+        </GridList>
+      </div>
+    );
+  }
 }
 
 ImageGrid.propTypes = {

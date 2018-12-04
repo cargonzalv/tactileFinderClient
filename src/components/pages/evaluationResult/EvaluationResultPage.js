@@ -36,6 +36,7 @@ const getBase64FromImageUrl = img => {
   return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 };
 
+
 let colors = {
   green: "#008744",
   blue: "#0057e7",
@@ -91,6 +92,37 @@ const styles = theme => ({
     top: 0,
     left: 0,
     display: "none"
+  },
+  loaderContainer: {
+    position: "fixed" /* Sit on top of the page content */,
+    display: "block" /* Hidden by default */,
+    width: "100%" /* Full width (cover the whole page) */,
+    height: "100%" /* Full height (cover the whole page) */,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)" /* Black background with opacity */,
+    zIndex: 1000 /* Specify a stack order in case you're using a different order for other  */
+  },
+  loader: {
+    position: "relative" /* Sit on top of the page content */,
+    width: "200px" /* Full width (cover the whole page) */,
+    height: "200px",
+    top: "40%",
+    left: "50%",
+    transform: "translate(-50%,-50%)"
+  },
+  loaderText: {
+    position: "relative" /* Sit on top of the page content */,
+    width: "20%" /* Full width (cover the whole page) */,
+    height: "200px",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%,-50%)",
+    zIndex: 1001,
+    fontSize: 12,
+    color: "white"
   }
 });
 
@@ -113,9 +145,10 @@ class EvaluationResultPage extends Component {
           ? urlCreator.createObjectURL(history.image)
           : imageEx,
       loadingImg: false,
-      name:""
+      name:"",
+      showLoader: false,
     };
-    // this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
+    this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
     // this.getImageScore = this.getImageScore.bind(this);
     this.model = null;
   }
@@ -131,6 +164,8 @@ class EvaluationResultPage extends Component {
   //   }
   // }
   async componentDidMount() {
+    console.log(this.props.history.location.state)
+
     // this.model = new TFModel();
     // console.time("Loading of model");
     // await this.model.load();
@@ -157,35 +192,57 @@ class EvaluationResultPage extends Component {
   //   });
   // }
 
-  // fileSelectedHandler(event) {
-  //   console.log(event);
-  //   if (event.target.files && event.target.files[0]) {
-  //     console.log(event.target.files[0]);
-  //     let reader = new FileReader();
-  //     reader.onload = e => {
-  //       console.log("loadedddd");
-  //       this.setState({ image: e.target.result, loadingImg: false });
-  //     };
-  //     reader.readAsDataURL(event.target.files[0]);
-  //   } else {
-  //     this.setState({ loadingImg: false });
-  //   }
-  // }
-  handleImgLoad() {
-    if (this.state.predictions) {
-      this.getImageScore();
+  fileSelectedHandler(event) {
+    console.log(event);
+    if (event.target.files && event.target.files[0]) {
+      console.log(event.target.files[0]);
+      let reader = new FileReader();
+      reader.onload = e => {
+        console.log("loadedddd");
+        this.setState({ image: e.target.result, loadingImg: false });
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    } else {
+      this.setState({ loadingImg: false });
     }
   }
-  // handleUploadClick() {
-  //   this.setState({ loadingImg: true });
-  //   document.body.onfocus = () => {
-  //     let input = document.getElementById("file-upload");
-  //     if (this.state.inputImage == input.value || input.value.length == 0) {
-  //       this.setState({ loadingImg: false });
-  //     }
-  //   };
-  //   this.inputRef.current.click();
-  // }
+  handleImgLoad() {
+    console.log("entro aca")
+    let history = this.props.history.location.state;
+    if((!history || !history.image) && !history.score){
+      this.setState({showLoader:true})
+      let buffer = getBase64FromImageUrl(document.getElementById("inputImage"))
+      fetch("https://tactiled.firebaseapp.com/api/predictMultiple", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: [buffer]
+        })
+      })
+        .then(resp => resp.json())
+        .then(json => {
+          this.setState({
+            showLoader:false,
+            value: json.data[0].probability
+            })
+          console.log(json);
+
+        })
+    }
+  }
+  handleUploadClick() {
+    this.setState({ loadingImg: true });
+    document.body.onfocus = () => {
+      let input = document.getElementById("file-upload");
+      if (input == null || this.state.inputImage == input.value || input.value.length == 0) {
+        this.setState({ loadingImg: false });
+      }
+    };
+    this.inputRef.current.click();
+  }
   renderResultTitle() {
     const { classes } = this.props;
 
@@ -244,6 +301,10 @@ class EvaluationResultPage extends Component {
     );
   }
 
+  handleDownload(){
+    var url = document.getElementById("inputImage").src.replace(/^data:image\/[^;]+/, 'data:application/octet-stream');
+    window.open(url);
+  }
   getInitialState(event) {
     this.setState({ value: event.target.value });
   }
@@ -275,8 +336,7 @@ class EvaluationResultPage extends Component {
     // spokes
     return (
       <div>
-        {(this.state.predicting || this.state.loadingImg) &&
-        this.state.showLoader ? (
+        {this.state.showLoader ? (
           <div className={classes.loaderContainer}>
             <Loading
               className={classes.loader}
@@ -318,12 +378,11 @@ class EvaluationResultPage extends Component {
                 sm={12}
                 className={classes.buttonCase}
               >
-                {/* <Button
+                <Button
                   variant="outlined"
                   disabled={
                     this.state.loadingImg ||
-                    this.state.predicting ||
-                    !this.state.predictions
+                    this.state.predicting
                   }
                   onClick={() => {
                     this.handleUploadClick();
@@ -340,10 +399,11 @@ class EvaluationResultPage extends Component {
                     className={classes.inputFile}
                     type="file"
                   />
-                </Button> */}
+                </Button>
                 <Button
                   variant="outlined"
                   color="primary"
+                  onClick={()=> this.handleDownload()}
                   className={classes.button}
                 >
                   Download the image

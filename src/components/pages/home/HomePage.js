@@ -11,7 +11,7 @@ import { TFModel } from "../../../TFModel.js";
 
 import "./HomePage.css";
 import Footer from "../../shared/HomeFooter";
-import logo from "../../../images/Logo.png";
+import logo from "../../../images/LogoSecondTaglineNoBG.png";
 import { withRouter } from "react-router-dom";
 import ImageGrid from "./ImageGrid";
 
@@ -38,11 +38,9 @@ const styles = theme => ({
     marginRight: theme.spacing.unit
   },
   title: {
-    fontSize: "6rem",
-    fontWeight: 300,
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     lineHeight: "1.14286em",
     marginLeft: "-.04em",
+    transform: "scale(0.9)",
     letterSpacing: "-.04em"
   },
   train: {
@@ -82,6 +80,9 @@ const styles = theme => ({
   }
 });
 
+
+
+
 class HomePage extends Component {
   constructor(props) {
     super(props);
@@ -100,13 +101,23 @@ class HomePage extends Component {
     result: {}
   };
 
-  addImages = urls => {
+  componentDidMount(){
+    let data =sessionStorage.getItem("data")
+    if(data !== null){
+      this.setState({
+        data: JSON.parse(data),
+        name: sessionStorage.getItem("query")
+      })
+    }
+  }
+  addImages = buffers => {
     //se cargaron todas las imagenes
     console.log("lala");
-    if (urls.length > 0) {
+    if (buffers.length > 0  && this.state.name !== sessionStorage.getItem("query")) {
       console.log("finished");
       console.log("requesting...");
-      this.setState({ predicting: true });
+      // fetch("http://localhost:5000/api/predictMultiple", {
+
       fetch("https://tactiled.firebaseapp.com/api/predictMultiple", {
         method: "POST",
         headers: {
@@ -114,7 +125,7 @@ class HomePage extends Component {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          data: urls
+          data: buffers
         })
       })
         .then(resp => resp.json())
@@ -123,10 +134,12 @@ class HomePage extends Component {
           let data = this.state.data;
 
           data.map((d, i) => {
-            d.score = json.data[i].probability;
+            d.score = json.data[i] !== undefined ? json.data[i].probability : 0.00;
           });
 
-          this.setState({ data: data, predictin: false });
+          this.setState({ data: data, predicting: false });
+          sessionStorage.setItem("data",JSON.stringify(data))
+          sessionStorage.setItem("query", this.state.name)
         });
     }
   };
@@ -142,6 +155,7 @@ class HomePage extends Component {
       typing: false,
       typingTimeout: setTimeout(() => {
         if (event.target.value.length > 0)
+          this.setState({predicting:true});
           fetch(
             "https://www.googleapis.com/customsearch/v1?q=" +
               this.state.name +
@@ -161,10 +175,9 @@ class HomePage extends Component {
                     };
                   })
                 });
-                this.addImages(json.items.map(d => d.image.thumbnailLink));
               }
             });
-      }, 1000)
+      }, 700)
     });
   };
   uploadImageSrc = (ev,i) => {
@@ -213,19 +226,7 @@ class HomePage extends Component {
             <Paper className={classes.paper}>
               <Grid item xs={12}>
                 <img className={classes.title} src={logo} color="inherit" />
-              </Grid>{" "}
-              <Grid item xs={12}>
-                <Typography
-                  id="subheading"
-                  variant="title"
-                  align="center"
-                  color="textSecondary"
-                  paragraph
-                >
-                  Making more tactile graphs available to blind people through
-                  magic *
-                </Typography>{" "}
-              </Grid>
+              </Grid>{" "}                
               <Grid container spacing={24}>
                 <Grid item xs={12}>
                   <input
@@ -273,7 +274,7 @@ class HomePage extends Component {
                 <ImageGrid
                   data={this.state.data}
                   uploadImage={this.uploadImageSrc}
-                  addImage={this.addImage}
+                  addImages={this.addImages}
                   results={this.state.results}
                 />
                 <Typography

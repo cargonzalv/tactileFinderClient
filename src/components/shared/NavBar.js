@@ -6,7 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import Typography from '@material-ui/core/Typography';
-import logo from "../../images/Logo.png";
+import logo from "../../images/LogoNoTaglineNoBG.png";
 const styles = {
   root: {
     flexGrow: 1,
@@ -15,10 +15,9 @@ const styles = {
   bar: {
   },
   logo:{
-      marginLeft:"45vw",
-      width:"250x",
+      marginLeft:"50vw",
       height:"50px",
-      transform: "translate(-50%,0)",
+      transform: "translate(-240px,0)",
   },
   menuButton: {
     marginLeft: -12,
