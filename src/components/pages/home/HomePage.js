@@ -80,8 +80,20 @@ const styles = theme => ({
   }
 });
 
-
-
+function firstN(obj, n) {
+  console.log(obj);
+  let array = Object.keys(obj) //get the keys out
+    .sort(function(a, b) {
+      return parseFloat(obj[b]) - parseFloat(obj[a]);
+    })
+    .slice(0, n); //get the first N
+  return array.map((a)=>{
+    return{
+      index: a,
+      score:obj[a]
+    }
+  })
+}
 
 class HomePage extends Component {
   constructor(props) {
@@ -101,46 +113,112 @@ class HomePage extends Component {
     result: {}
   };
 
-  componentDidMount(){
-    let data =sessionStorage.getItem("data")
-    if(data !== null){
+  setPredicting(bool) {
+    this.setState({
+      predicting: bool
+    });
+  }
+  componentDidMount() {
+    let data = sessionStorage.getItem("data");
+    if (data !== null) {
       this.setState({
         data: JSON.parse(data),
         name: sessionStorage.getItem("query")
-      })
+      });
     }
   }
-  addImages = buffers => {
+  predictImages = async data => {
     //se cargaron todas las imagenes
     console.log("lala");
-    if (buffers.length > 0  && this.state.name !== sessionStorage.getItem("query")) {
+    if (this.state.name !== sessionStorage.getItem("query")) {
       console.log("finished");
       console.log("requesting...");
-      // fetch("http://localhost:5000/api/predictMultiple", {
-
-      fetch("https://tactiled.firebaseapp.com/api/predictMultiple", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          data: buffers
-        })
-      })
-        .then(resp => resp.json())
-        .then(json => {
-          console.log(json);
-          let data = this.state.data;
-
-          data.map((d, i) => {
-            d.score = json.data[i] !== undefined ? json.data[i].probability : 0.00;
+      let fetches = [];
+      let chunk = 5;
+      let results = {};
+      for (let i = 0; i < data.length; i += chunk) {
+        let subData = data.slice(i, i + chunk);
+        let currentFetch = fetch(
+          "https://openwhisk.ng.bluemix.net/api/v1/web/carlosegonzaleza%40hotmail.com_dev/default/classify.json",
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              images: subData.map(d => d.img)
+            })
+          }
+        )
+          .then(resp => resp.json())
+          .then(json => {
+            return new Promise((res, rej) => {
+              if (json.results) {
+                json.results.map((r, j) => {
+                  results[i + j] = r.probability;
+                });
+                res(json.results);
+              } else {
+                rej("There has been an error on the request");
+              }
+            });
           });
+        fetches.push(currentFetch);
+      }
+      Promise.all(fetches)
+        .then(() => {
+          let resultsSorted = firstN(results, 10);
+          let newData = [];
+          resultsSorted.map(res => {
+            let d = data[res.index];
+            d.score = res.score;
+            newData.push(d);
+          });
+          console.log(newData)
 
-          this.setState({ data: data, predicting: false });
-          sessionStorage.setItem("data",JSON.stringify(data))
-          sessionStorage.setItem("query", this.state.name)
+          this.setState({
+            predicting: false,
+            data: newData
+          });
+          sessionStorage.setItem("data", JSON.stringify(newData));
+          sessionStorage.setItem("query", this.state.name);
+        })
+        .catch(err => {
+          this.setState({ predicting: false });
+          alert(err);
         });
+      //   fetch("https://openwhisk.ng.bluemix.net/api/v1/web/carlosegonzaleza%40hotmail.com_dev/default/classify.json", {
+      //   method: "POST",
+      //   headers: {
+      //     Accept: "application/json",
+      //     "Content-Type": "application/json"
+      //   },
+      //   body: JSON.stringify({
+      //     images: this.state.data.map((d)=>d.img)
+      //   })
+      // })
+      //   .then(resp => resp.json())
+      //   .then(json => {
+      //     console.log(json);
+      //     let data = this.state.data;
+
+      //     data.map((d, i) => {
+      //       d.score =
+      //         json.results[i] !== undefined ? json.results[i].probability : 0.0;
+      //     });
+
+      //     this.setState({
+      //       data: data,
+      //       predicting: false
+      //     });
+      //     sessionStorage.setItem("data", JSON.stringify(data));
+      //     sessionStorage.setItem("query", this.state.name);
+      //   });
+    } else {
+      this.setState({
+        predicting: false
+      });
     }
   };
 
@@ -154,58 +232,73 @@ class HomePage extends Component {
       name: event.target.value,
       typing: false,
       typingTimeout: setTimeout(() => {
-        if (event.target.value.length > 0)
-          this.setState({predicting:true});
-          fetch(
-            "https://www.googleapis.com/customsearch/v1?q=" +
-              this.state.name +
-              "&cx=015464166180940179903:65zdubuzn5a&fileType=jpg&imgColorType=gray&imgDominantColor=white&imgDominantColor=gray&imgDominantColor=black&imgType=clipart&searchType=image&key=AIzaSyAxCUKf2d2dIpFV0lnZ7VslvW4mqp9TQOU"
-          )
-            .then(res => res.json())
-            .then(json => {
-              console.log(json);
-              if (json.items) {
-                this.setState({
-                  data: json.items.map(d => {
-                    return {
-                      img: d.image.thumbnailLink,
-                      title: d.htmlTitle,
-                      author: "author",
-                      link: d.link
-                    };
-                  })
+        if (event.target.value.length > 0) {
+          this.setState({ predicting: true });
+          let results = [];
+          let fetches = [1, 11, 21, 31].map(start =>
+            fetch(
+              "https://www.googleapis.com/customsearch/v1?q=" +
+                this.state.name +
+                "&cx=015464166180940179903:65zdubuzn5a" +
+                "&orTerms=simple&orTerms=clipart" +
+                "&fileType=jpg&imgSize=medium" +
+                "&imgColorType=gray&imgDominantColor=white&imgDominantColor=gray&imgDominantColor=black" +
+                "&imgType=clipart&searchType=image" +
+                "&key=AIzaSyAxCUKf2d2dIpFV0lnZ7VslvW4mqp9TQOU&start=" +
+                start
+            )
+              .then(resp => resp.json())
+              .then(res => {
+                return new Promise((resolve, rej) => {
+                  results = results.concat(res.items);
+                  resolve(res);
                 });
-              }
-            });
+              })
+          );
+          Promise.all(fetches).then(res => {
+            console.log(results);
+            if (results.length > 0) {
+              let newData = results.map(d => {
+                return {
+                  img: d.image.thumbnailLink,
+                  title: d.htmlTitle,
+                  author: "author",
+                  link: d.link
+                };
+              });
+
+              this.predictImages(newData);
+            }
+          });
+        }
       }, 700)
     });
   };
-  uploadImageSrc = (ev,i) => {
+  uploadImageSrc = (ev, i) => {
     if (!this.state.predicting) {
-
-    let src = ev.target.src;
-    fetch(src)
-      .then(res => res.blob())
-      .then(blob => {
-        const file = new File([blob], "dot.png", blob);
-        this.props.history.push({
-          pathname: "/result",
-          state: {
-            image: file,
-            score: this.state.data[i].score
-          }
+      let src = ev.target.src;
+      fetch(src)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], "dot.png", blob);
+          this.props.history.push({
+            pathname: "/result",
+            state: {
+              image: file,
+              score: this.state.data[i].score
+            }
+          });
         });
-      });
     }
   };
-  uploadImage = () => (event,i) => {
-      console.log(event.target.files[0]);
-      this.props.history.push({
-        pathname: "/result",
-        state: {
-          image: event.target.files[0],
-        }
-      })
+  uploadImage = () => (event, i) => {
+    console.log(event.target.files[0]);
+    this.props.history.push({
+      pathname: "/result",
+      state: {
+        image: event.target.files[0]
+      }
+    });
   };
 
   searchImage = name => event => {
@@ -226,7 +319,7 @@ class HomePage extends Component {
             <Paper className={classes.paper}>
               <Grid item xs={12}>
                 <img className={classes.title} src={logo} color="inherit" />
-              </Grid>{" "}                
+              </Grid>{" "}
               <Grid container spacing={24}>
                 <Grid item xs={12}>
                   <input
@@ -274,8 +367,8 @@ class HomePage extends Component {
                 <ImageGrid
                   data={this.state.data}
                   uploadImage={this.uploadImageSrc}
-                  addImages={this.addImages}
                   results={this.state.results}
+                  predicting={this.state.predicting}
                 />
                 <Typography
                   id="subheading"
@@ -284,7 +377,7 @@ class HomePage extends Component {
                   color="textSecondary"
                   paragraph
                 >
-                  Examples of good images to upload{" "}
+                  Good images for Tactile Graphics
                 </Typography>{" "}
               </Grid>{" "}
             </Paper>{" "}

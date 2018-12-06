@@ -30,6 +30,13 @@ const styles = theme => ({
     height: 220,
     width: 2000
   },
+  loaderContainer: {
+    flexWrap: "nowrap",
+    // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+    transform: "translateZ(0)",
+    height: 220,
+    width: 2000
+  },
   title: {
     color: theme.palette.primary
   },
@@ -52,10 +59,10 @@ const styles = theme => ({
 
 function toDataURL(src, callback) {
   var img = new Image();
-  img.crossOrigin = 'Anonymous';
+  img.crossOrigin = "Anonymous";
   img.onload = function() {
-    var canvas = document.createElement('CANVAS');
-    var ctx = canvas.getContext('2d');
+    var canvas = document.createElement("CANVAS");
+    var ctx = canvas.getContext("2d");
     var dataURL;
     canvas.height = this.naturalHeight;
     canvas.width = this.naturalWidth;
@@ -65,69 +72,62 @@ function toDataURL(src, callback) {
   };
   img.src = src;
   if (img.complete || img.complete === undefined) {
-    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+    img.src =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
     img.src = src;
   }
 }
 
-
 class ImageGrid extends React.Component {
   constructor(props) {
-    super(props);  
-
-  }
-  componentDidUpdate(prevProps) {
-    if(prevProps.data !== this.props.data && this.props.data.length > 0){
-      let buffers = [];
-
-      this.props.data.map((d,i)=>{
-        toDataURL(d.img, (base64)=>{
-          buffers.push(base64)
-          if(i == this.props.data.length - 1){
-            this.props.addImages(buffers)
-          }
-        })
-      })
-      console.log(buffers)
-
-      //this.props.addImage
-    }
+    super(props);
   }
   render() {
     const { classes } = this.props;
 
     return (
       <div className={classes.root}>
-        <GridList ref={this.grid} className={classes.gridList} cols={3} style={{ margin: 15 }}>
-          {this.props.data.map((tile, i) => (
-            <GridListTile
-              className={"gridTile " + classes.imageContainer}
-              key={tile.img}
-            >
-              <img
-                crossOrigin="Anonymous"
-                id={"img" + i}
-                className={"image " + classes.images}
-                onClick={ev => this.props.uploadImage(ev, i)}
-                src={tile.img}
-                alt={tile.title}
-              />
-              {tile.score >= 80 && <span className="stamp good">Great!</span>}
-              {tile.score >= 30 && tile.score < 80 && (
-                <span className="stamp">Fair</span>
-              )}
-              {tile.score < 30 && <span className="stamp bad">Bad</span>}
-              {tile.score == undefined && (
-                <Loading
-                  className="loader"
-                  type={"spinningBubbles"}
-                  color={colors["blue"]}
-                />
-              )}
-              }
-            </GridListTile>
-          ))}
-        </GridList>
+        {!this.props.predicting ? (
+          <GridList
+            ref={this.grid}
+            className={classes.gridList}
+            cols={3}
+            style={{
+              margin: 15
+            }}
+          >
+            {this.props.data.map((tile, i) => (
+              <GridListTile
+                className={"gridTile " + classes.imageContainer}
+                key={tile.img}
+              >
+                <img
+                  crossOrigin="Anonymous"
+                  id={"img" + i}
+                  className={"image " + classes.images}
+                  onClick={ev => this.props.uploadImage(ev, i)}
+                  src={tile.img}
+                  alt={tile.title}
+                />{" "}
+                {tile.score >= 80 && (
+                  <span className="stamp good"> Great! </span>
+                )}{" "}
+                {tile.score >= 30 && tile.score < 80 && (
+                  <span className="stamp"> Fair </span>
+                )}{" "}
+                {tile.score < 30 && <span className="stamp bad"> Bad </span>}{" "}
+              </GridListTile>
+            ))}{" "}
+          </GridList>
+        ) : (
+          <div className={classes.loaderContainer}>
+            <Loading
+              className="loader"
+              type={"spinningBubbles"}
+              color={colors["blue"]}
+            />
+          </div>
+        )}{" "}
       </div>
     );
   }

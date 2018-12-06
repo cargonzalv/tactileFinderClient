@@ -209,27 +209,34 @@ class EvaluationResultPage extends Component {
   handleImgLoad() {
     console.log("entro aca")
     let history = this.props.history.location.state;
-    if((!history || !history.image) && !history.score){
+    console.log(history)
+    if((!history || !history.image) || !history.score){
       this.setState({showLoader:true})
       let buffer = getBase64FromImageUrl(document.getElementById("inputImage"))
-      fetch("https://tactiled.firebaseapp.com/api/predictMultiple", {
+      fetch("https://openwhisk.ng.bluemix.net/api/v1/web/carlosegonzaleza%40hotmail.com_dev/default/classify.json", {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          data: [buffer]
+          images: [buffer]
         })
       })
         .then(resp => resp.json())
         .then(json => {
           this.setState({
             showLoader:false,
-            value: json.data[0].probability
+            value: json.results[0].probability
             })
           console.log(json);
 
+        })
+        .catch((err)=>{
+          this.setState({
+            showLoader:false,
+          })
+          alert(err)
         })
     }
   }
