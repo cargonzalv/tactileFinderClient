@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Project description
 
-[Tactiled](https://tactiled.firebaseapp.com/) is a tool made to test the quality of an image to be used as a tactile graphic. We want to develop and train a Machine Learning model that determines the quality of an image that will be transformed to a tactile graphic, by evaluating the facility for a blind person to understand its content
+[Tactiled](https://tactiled.firebaseapp.com/) is a tool made to test the quality of an image to be used as a tactile graphic. We developed and trained a Machine Learning model that determines the quality of an image that will be transformed to a tactile graphic, by evaluating the facility for a blind person to understand its content
 
 
 ## Functionalities
