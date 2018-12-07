@@ -71,8 +71,9 @@
 
   .link{
 	cursor:pointer;
-	color:#0645AD !important;
+	color:#007bff !important;
   }
   .link:hover{
+		color: #0056b3 !important;
 	text-decoration:underline !important;
   }
