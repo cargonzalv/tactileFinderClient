@@ -36,7 +36,6 @@ const getBase64FromImageUrl = img => {
   return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 };
 
-
 let colors = {
   green: "#008744",
   blue: "#0057e7",
@@ -106,25 +105,27 @@ const styles = theme => ({
     zIndex: 1000 /* Specify a stack order in case you're using a different order for other  */
   },
   loader: {
-    position: "relative" /* Sit on top of the page content */,
+    position: "absolute" /* Sit on top of the page content */,
     width: "200px" /* Full width (cover the whole page) */,
     height: "200px",
     top: "40%",
     left: "50%",
-    transform: "translate(-50%,-50%)"
+    transform: "translate(-50%,-50%) scale(2)"
   },
   loaderText: {
-    position: "relative" /* Sit on top of the page content */,
-    width: "20%" /* Full width (cover the whole page) */,
-    height: "200px",
-    top: "50%",
+    position: "absolute" /* Sit on top of the page content */,
+    width: "80px" /* Full width (cover the whole page) */,
+    height: "10px",
+    top: "55%",
     left: "50%",
     transform: "translate(-50%,-50%)",
     zIndex: 1001,
-    fontSize: 12,
+    fontSize: 16,
     color: "white"
   }
 });
+var urlCreator = window.URL || window.webkitURL;
+
 
 class EvaluationResultPage extends Component {
   constructor(props) {
@@ -133,20 +134,19 @@ class EvaluationResultPage extends Component {
     this.image = React.createRef();
 
     let history = this.props.history.location.state;
-    var urlCreator = window.URL || window.webkitURL;
     console.log(history);
     this.state = {
       accepted: true,
       showClassify: false,
-      value: history.score,
-      category: history.score >= 50 ? "Positive" : "Negative",
+      value: history ? history.score : null,
+      category: history ? history.score >= 50 ? "Positive" : "Negative" : null,
       image:
         history && history.image
           ? urlCreator.createObjectURL(history.image)
-          : imageEx,
+          :imageEx,
       loadingImg: false,
-      name:"",
-      showLoader: false,
+      name: "",
+      showLoader: false
     };
     this.fileSelectedHandler = this.fileSelectedHandler.bind(this);
     // this.getImageScore = this.getImageScore.bind(this);
@@ -164,7 +164,7 @@ class EvaluationResultPage extends Component {
   //   }
   // }
   async componentDidMount() {
-    console.log(this.props.history.location.state)
+    console.log(this.props.history.location.state);
 
     // this.model = new TFModel();
     // console.time("Loading of model");
@@ -207,44 +207,50 @@ class EvaluationResultPage extends Component {
     }
   }
   handleImgLoad() {
-    console.log("entro aca")
+    console.log("entro aca");
     let history = this.props.history.location.state;
-    console.log(history)
-    if((!history || !history.image) || !history.score){
-      this.setState({showLoader:true})
-      let buffer = getBase64FromImageUrl(document.getElementById("inputImage"))
-      fetch("https://openwhisk.ng.bluemix.net/api/v1/web/carlosegonzaleza%40hotmail.com_dev/default/classify.json", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          images: [buffer]
-        })
-      })
+    if (!history || !history.image || !history.score || this.state.image.includes("data:image/jpeg;base64")) {
+      this.setState({ showLoader: true });
+      let buffer = getBase64FromImageUrl(document.getElementById("inputImage"));
+      fetch(
+        "https://openwhisk.ng.bluemix.net/api/v1/web/carlosegonzaleza%40hotmail.com_dev/default/classify.json",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            images: [buffer]
+          })
+        }
+      )
         .then(resp => resp.json())
         .then(json => {
           this.setState({
-            showLoader:false,
+            showLoader: false,
             value: json.results[0].probability
-            })
+          });
           console.log(json);
-
         })
-        .catch((err)=>{
+        .catch(err => {
           this.setState({
-            showLoader:false,
-          })
-          alert(err)
-        })
+            showLoader: false
+          });
+          console.log(err)
+          alert("Can't process request right now. Try again later");
+        });
     }
   }
   handleUploadClick() {
     this.setState({ loadingImg: true });
     document.body.onfocus = () => {
       let input = document.getElementById("file-upload");
-      if (input == null || this.state.inputImage == input.value || input.value.length == 0) {
+      if (
+        input == null ||
+        this.state.image == input.value ||
+        input.value.length == 0
+      ) {
         this.setState({ loadingImg: false });
       }
     };
@@ -252,36 +258,32 @@ class EvaluationResultPage extends Component {
   }
   renderResultTitle() {
     const { classes } = this.props;
+    let text =
+      this.state.value >= 80 ? (
+        <span className="stamp2 good"> Great Image! </span>
+      ) : this.state.value > 30 ? (
+        <span className="stamp2"> Fair </span>
+      ) : (
+        <span className="stamp2 bad"> Bad Image </span>
+      );
 
-    return this.state.accepted ? (
+    return (
       <Typography
-        className={classes.results}
         component="h1"
         variant="display2"
         align="center"
         color="textPrimary"
         gutterBottom
       >
-        Accepted
+        {text}
       </Typography>
-    ) : (
-      <Typography
-        className={classes.results}
-        component="h1"
-        variant="display2"
-        align="center"
-        color="textPrimary"
-        gutterBottom
-      >
-        Failed
-      </Typography>
-    );
+    )
   }
 
   renderImageResults() {
     const { classes } = this.props;
 
-    return this.state.value >= 85 ? (
+    return this.state.value >= 80 ? (
       <Typography
         className={classes.title}
         component="h1"
@@ -292,7 +294,7 @@ class EvaluationResultPage extends Component {
       >
         Great image! It works!
       </Typography>
-    ) : this.state.predictions ? (
+    ) : (
       <Typography
         className={classes.title}
         component="h2"
@@ -303,13 +305,13 @@ class EvaluationResultPage extends Component {
       >
         Try again with a better image :(
       </Typography>
-    ) : (
-      ""
-    );
+    )
   }
 
-  handleDownload(){
-    var url = document.getElementById("inputImage").src.replace(/^data:image\/[^;]+/, 'data:application/octet-stream');
+  handleDownload() {
+    var url = document
+      .getElementById("inputImage")
+      .src.replace(/^data:image\/[^;]+/, "data:application/octet-stream");
     window.open(url);
   }
   getInitialState(event) {
@@ -323,13 +325,19 @@ class EvaluationResultPage extends Component {
   };
   sendFeedBack = () => {
     let img = getBase64FromImageUrl(document.getElementById("inputImage"));
-    let data = { image: img, label: this.state.name, direction: this.state.category }
+    let data = {
+      image: img,
+      label: this.state.name,
+      direction: this.state.category
+    };
 
-    dataRef.doc().set(data)
-    .then(()=>{
-      alert("Feedback sent!")
-    })
-  }
+    dataRef
+      .doc()
+      .set(data)
+      .then(() => {
+        alert("Feedback sent!");
+      });
+  };
 
   render() {
     const { classes } = this.props;
@@ -350,12 +358,10 @@ class EvaluationResultPage extends Component {
               type={"spinningBubbles"}
               color={colors["blue"]}
             />
-            {this.state.predicting && (
               <h3 className={classes.loaderText}>
-                Loading Maching Learning Model... please have patience
+                Predicting...
               </h3>
-            )}
-          </div>
+              </div>
         ) : (
           ""
         )}
@@ -387,10 +393,7 @@ class EvaluationResultPage extends Component {
               >
                 <Button
                   variant="outlined"
-                  disabled={
-                    this.state.loadingImg ||
-                    this.state.predicting
-                  }
+                  disabled={this.state.loadingImg || this.state.predicting}
                   onClick={() => {
                     this.handleUploadClick();
                   }}
@@ -410,7 +413,7 @@ class EvaluationResultPage extends Component {
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={()=> this.handleDownload()}
+                  onClick={() => this.handleDownload()}
                   className={classes.button}
                 >
                   Download the image
@@ -518,7 +521,6 @@ class EvaluationResultPage extends Component {
                       className={classes.button}
                       onClick={() => this.sendFeedBack()}
                       disabled={this.state.name.length == 0}
-                      
                     >
                       Send Feedback
                     </Button>

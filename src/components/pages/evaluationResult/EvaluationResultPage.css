@@ -1,20 +1,51 @@
 .val {
-  text-align: center;
-  font-size: 3em;
-  width: 300px; 
-  height: 100px;
-  line-height: 60px;
-  margin-left:auto;
-  margin-right:auto;
-  margin-top:0;
-  letter-spacing: -.07em;
-  text-shadow: white 2px 2px 2px;
+    text-align: center;
+    font-size: 3em;
+    width: 300px;
+    height: 100px;
+    line-height: 60px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    letter-spacing: -.07em;
+    text-shadow: white 2px 2px 2px;
 }
 
-#file-upload:hover{
-  cursor: pointer
+#file-upload:hover {
+    cursor: pointer
 }
-#inputImage{
-  max-width: 224px;
-  max-height: 224px;
+
+#inputImage {
+    max-width: 224px;
+    max-height: 224px;
+}
+
+.stamp2 {
+    margin-top: 10px;
+    padding: 10px 5px;
+    color: #555;
+    font-size: 3rem;
+    font-weight: 700;
+    border: 0.25rem solid #555;
+    display: inline-block;
+    text-transform: uppercase;
+    border-radius: 1rem;
+    font-family: 'Courier';
+    -webkit-mask-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/8399/grunge.png');
+    -webkit-mask-size: 944px 604px;
+    mix-blend-mode: multiply;
+}
+
+.bad {
+    color: #D23;
+    border: 0.5rem double #D23;
+    -webkit-mask-position: 2rem 3rem;
+}
+
+.good {
+    color: #0A9928;
+    border: 0.5rem solid #0A9928;
+    -webkit-mask-position: 13rem 6rem;
+    border-radius: 0;
+
 }
