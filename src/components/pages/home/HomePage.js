@@ -291,6 +291,11 @@ class HomePage extends Component {
         });
     }
   };
+  goTrain(){
+    this.props.history.push({
+      pathname: "/train",
+    });
+  }
   uploadImage = () => (event, i) => {
     console.log(event.target.files[0]);
     this.props.history.push({
@@ -313,7 +318,7 @@ class HomePage extends Component {
         <Grid container>
           <Grid className="specialGrid" item xs={1} />{" "}
           <Grid className={classes.train} item xs={4}>
-            <a href="/train"> ...Or help us train our model! </a>{" "}
+            <a className="link" onClick={()=>this.goTrain()} > ...Or help us train our model! </a>{" "}
           </Grid>{" "}
           <Grid item xs={10}>
             <Paper className={classes.paper}>

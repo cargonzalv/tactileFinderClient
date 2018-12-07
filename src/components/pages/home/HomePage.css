@@ -68,3 +68,11 @@
 	  top:50%;
 	  transform: translate(-50%, -63%) !important;
   }
+
+  .link{
+	cursor:pointer;
+	color:#0645AD !important;
+  }
+  .link:hover{
+	text-decoration:underline !important;
+  }
