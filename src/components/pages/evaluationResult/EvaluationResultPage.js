@@ -126,7 +126,6 @@ const styles = theme => ({
 });
 var urlCreator = window.URL || window.webkitURL;
 
-
 class EvaluationResultPage extends Component {
   constructor(props) {
     super(props);
@@ -139,11 +138,15 @@ class EvaluationResultPage extends Component {
       accepted: true,
       showClassify: false,
       value: history ? history.score : null,
-      category: history ? history.score >= 50 ? "Positive" : "Negative" : null,
+      category: history
+        ? history.score >= 50
+          ? "Positive"
+          : "Negative"
+        : null,
       image:
         history && history.image
           ? urlCreator.createObjectURL(history.image)
-          :imageEx,
+          : imageEx,
       loadingImg: false,
       name: "",
       showLoader: false
@@ -209,7 +212,12 @@ class EvaluationResultPage extends Component {
   handleImgLoad() {
     console.log("entro aca");
     let history = this.props.history.location.state;
-    if (!history || !history.image || !history.score || this.state.image.includes("data:image/jpeg;base64")) {
+    if (
+      !history ||
+      !history.image ||
+      !history.score ||
+      this.state.image.includes("data:image/jpeg;base64")
+    ) {
       this.setState({ showLoader: true });
       let buffer = getBase64FromImageUrl(document.getElementById("inputImage"));
       fetch(
@@ -237,7 +245,7 @@ class EvaluationResultPage extends Component {
           this.setState({
             showLoader: false
           });
-          console.log(err)
+          console.log(err);
           alert("Can't process request right now. Try again later");
         });
     }
@@ -277,7 +285,7 @@ class EvaluationResultPage extends Component {
       >
         {text}
       </Typography>
-    )
+    );
   }
 
   renderImageResults() {
@@ -305,14 +313,19 @@ class EvaluationResultPage extends Component {
       >
         Try again with a better image :(
       </Typography>
-    )
+    );
   }
 
   handleDownload() {
     var url = document
-      .getElementById("inputImage")
-      .src.replace(/^data:image\/[^;]+/, "data:application/octet-stream");
-    window.open(url);
+    .getElementById("inputImage")
+    .src.replace(/^data:image\/[^;]+/, "data:application/octet-stream");
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "TactileGraphic.jpg";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
   getInitialState(event) {
     this.setState({ value: event.target.value });
@@ -358,10 +371,8 @@ class EvaluationResultPage extends Component {
               type={"spinningBubbles"}
               color={colors["blue"]}
             />
-              <h3 className={classes.loaderText}>
-                Predicting...
-              </h3>
-              </div>
+            <h3 className={classes.loaderText}>Predicting...</h3>
+          </div>
         ) : (
           ""
         )}
