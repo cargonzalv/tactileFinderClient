@@ -250,7 +250,9 @@ class HomePage extends Component {
               .then(resp => resp.json())
               .then(res => {
                 return new Promise((resolve, rej) => {
-                  results = results.concat(res.items);
+                  if(res.items !== undefined){
+                    results = results.concat(res.items);
+                  }
                   resolve(res);
                 });
               })
@@ -268,6 +270,9 @@ class HomePage extends Component {
               });
 
               this.predictImages(newData);
+            }
+            else{
+              alert("No images found, try with another query")
             }
           });
         }
