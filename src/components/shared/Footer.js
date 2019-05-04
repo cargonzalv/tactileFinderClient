@@ -33,7 +33,7 @@ class Footer extends Component {
 				<Paper className={classes.paper}>
           			<Grid container spacing={24}>
           				<Grid item xs={12}>
-          				Mit license. by Carlos Gonzalez
+          				Mit license
           				</Grid>
            			</Grid>
           		</Paper>

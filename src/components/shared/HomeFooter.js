@@ -33,7 +33,7 @@ class HomeFooter extends Component {
 				<Paper className={classes.paper}>
           			<Grid container spacing={24}>
           				<Grid item xs={9}>
-          				Mit license. by Carlos Gonzalez
+          				Mit license
           				</Grid>
           				<Grid item xs={3}>
            				* By magic we mean machine learning
